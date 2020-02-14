@@ -29,6 +29,16 @@
 .search-box {
   border-right-width: 0;
   max-width: calc(100% - 35px);
+
+  :host-context(.dark) & {
+    background-color: $dark-mode-dark-panel;
+    color: $dark-mode-text;
+    border-color: $dark-mode-dark-panel;
+
+    &:focus {
+      box-shadow: 0 0 5px $dark-mode-dark-panel;
+    }
+  }
 }
 
 .search-bar {
@@ -42,7 +52,7 @@
 .icon-menu {
   color: $dark-blue;
   display: flex;
-  font-size: 1.5rem;
+  font-size: 1rem;
   letter-spacing: 2px;
   line-height: 30px;
   margin: 0 0 .5em !important;
@@ -55,9 +65,16 @@
   width: 30px;
   text-align: center;
   color: $dark-blue;
+
+  :host-context(.dark) & {
+    color: $dark-mode-text;
+  }
 }
 
-.twitter, .twitter:hover, .twitter:active, .twitter:visited {
+.twitter,
+.twitter:hover,
+.twitter:active,
+.twitter:visited {
   color: $twitter-blue !important;
 }
 
@@ -73,9 +90,15 @@ ins.adsbygoogle {
 .logo-wrap {
   text-align: center;
 }
+
 .logo {
-  max-height: 10em;
-  margin-bottom: .5em;
+  padding: 0 0 .5em;
+  margin-right: -1em;
+
+  @media print, screen and (min-width: 40em) {
+    padding: 1em 0;
+    margin-right: 0;
+  }
 }
 
 .mayhem {

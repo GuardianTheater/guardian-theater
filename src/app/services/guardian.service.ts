@@ -1,238 +1,144 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, BehaviorSubject, Subscription } from 'rxjs/Rx';
-import { Response } from '@angular/http';
+import { Injectable } from '@angular/core';
+import {
+  DestinyActivityHistoryResults,
+  DestinyCharacterComponent,
+  DestinyHistoricalStatsPeriodGroup,
+  DestinyProfileResponse,
+  ServerResponse,
+  BungieMembershipType
+} from 'bungie-api-ts/destiny2';
+import { UserInfoCard } from 'bungie-api-ts/user';
+import { Observable, forkJoin as observableForkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { BungieHttpService } from './bungie-http.service';
-import { SettingsService } from './settings.service';
-import { Router, ActivatedRoute, Params } from '@angular/router';
 
 @Injectable()
-export class GuardianService implements OnDestroy {
-  private subParams: Subscription;
-  private subSearch: Subscription;
-  private subAccount: Subscription;
-  private subCharacter: Subscription;
-  private subActivityHistory: Subscription;
+export class GuardianService {
+  constructor(private bHttp: BungieHttpService) {}
 
-  private _membershipId: BehaviorSubject<string>;
+  getLinkedAccounts(
+    membershipType: BungieMembershipType,
+    membershipId: string
+  ): Observable<
+    ServerResponse<{
+      bnetMembership: UserInfoCard;
+      profiles: UserInfoCard[];
+      profilesWithErrors: {
+        errorCode: number;
+        infoCard: UserInfoCard;
+      }[];
+    }>
+  > {
+    const url = `https://stats.bungie.net/Platform/Destiny2/${membershipType}/Profile/${membershipId}/LinkedProfiles/`;
+    return this.bHttp.get(url);
+  }
 
-  public searchName: BehaviorSubject<string>;
-  public selectPlatform: BehaviorSubject<boolean>;
-  public membershipType: BehaviorSubject<number>;
-  public displayName: BehaviorSubject<string>;
-  public characters: BehaviorSubject<bungie.Character[]>;
-  public characterId: BehaviorSubject<string>;
-  public activeCharacter: BehaviorSubject<bungie.Character>;
-  public activities: BehaviorSubject<gt.Activity[]>;
-  public activityMode: BehaviorSubject<string>;
-  public activityPage: BehaviorSubject<number>;
-  public activityId: BehaviorSubject<string>;
-  public noResults: BehaviorSubject<boolean>;
-  public noActivities: BehaviorSubject<boolean>;
+  getProfile(
+    membershipType: number,
+    membershipId: string
+  ): Observable<ServerResponse<DestinyProfileResponse>> {
+    const url = `https://stats.bungie.net/Platform/Destiny2/${membershipType}/Profile/${membershipId}/?components=100,200`;
+    return this.bHttp.get(url);
+  }
 
-  constructor(
-    private bHttp: BungieHttpService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private settingsService: SettingsService
-  ) {
-    this._membershipId = new BehaviorSubject('');
-    this.activityMode = new BehaviorSubject('None');
-    this.activityPage = new BehaviorSubject(0);
-
-    this.searchName = new BehaviorSubject('');
-    this.selectPlatform = new BehaviorSubject(false);
-    this.membershipType = new BehaviorSubject(-1);
-    this.displayName = new BehaviorSubject('');
-    this.characters = new BehaviorSubject([]);
-    this.characterId = new BehaviorSubject('');
-    this.activeCharacter = new BehaviorSubject(null);
-    this.activities = new BehaviorSubject([]);
-    this.activityId = new BehaviorSubject('');
-    this.noResults = new BehaviorSubject(false);
-    this.noActivities = new BehaviorSubject(false);
-
-    this.subParams = this.route.params
-      .subscribe((params: Params) => {
-        if (params['membershipType']) {
-          this.membershipType.next(+params['membershipType']);
-        } else {
-          this.membershipType.next(-1);
+  getEmblemHash(
+    membershipType: number,
+    membershipId: string
+  ): Observable<number> {
+    return this.getCharactersForAccount(membershipType, membershipId).pipe(
+      map(characters => {
+        if (characters && characters[0]) {
+          return characters[0].emblemHash
         }
-
-        if (params['guardian']) {
-          this.searchName.next(params['guardian']);
-        } else {
-          this.searchName.next('');
-        }
-
-        if (params['characterId']) {
-          this.characterId.next(params['characterId']);
-        } else {
-          this.characterId.next('');
-        }
-
-        if (params['gamemode']) {
-          this.activityMode.next(params['gamemode']);
-        } else {
-          this.activityMode.next('None');
-        }
-
-        if (params['page']) {
-          this.activityPage.next(+params['page']);
-        } else {
-          this.activityPage.next(0);
-        }
-      });
-
-    this.subSearch = Observable.combineLatest(
-      this.membershipType,
-      this.searchName
+      })
     )
-      .map(([platform, guardian]) => {
-        if (guardian.length) {
-          return 'https://www.bungie.net/d1/Platform/Destiny/SearchDestinyPlayer/' + platform + '/' + guardian + '/';
-        } else {
-          return '';
-        }
-      })
-      .distinctUntilChanged()
-      .switchMap((url) => {
-        this._membershipId.next('');
-        this.selectPlatform.next(false);
-        this.noResults.next(false);
-        if (url.length) {
-          return this.bHttp.get(url)
-            .map((res: Response) => res.json())
-            .catch((error: any) => Observable.throw(error.json().error || 'Server error'));
-        } else {
-          return Observable.empty();
-        }
-      })
-      .subscribe((res: bungie.SearchDestinyPlayerResponse) => {
-        try {
-          let Response = res.Response;
-          this.settingsService.activeName.next('');
-          if (Response.length === 1) {
-            this._membershipId.next(Response[0].membershipId);
-            this.displayName.next(Response[0].displayName);
-            this.settingsService.activeName.next(Response[0].displayName);
-            this.membershipType.next(Response[0].membershipType);
-          }
-          if (Response.length > 1) {
-            this.selectPlatform.next(true);
-          }
-          if (Response.length < 1) {
-            this.noResults.next(true);
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      });
+  }
 
-    this.subAccount = Observable.combineLatest(
-      this.membershipType,
-      this._membershipId
-    )
-      .map(([membershipType, membershipId]) => {
-        try {
-          if (membershipType && membershipId) {
-            return 'https://www.bungie.net/d1/Platform/Destiny/' + membershipType + '/Account/' + membershipId + '/Summary/';
-          } else {
-            return '';
+  getCharactersForAccount(
+    membershipType: number,
+    membershipId: string
+  ): Observable<DestinyCharacterComponent[]> {
+    return this.getLinkedAccounts(membershipType, membershipId).pipe(
+      switchMap(linkedAccounts => {
+        return observableForkJoin(
+          linkedAccounts.Response.profiles.map(profile => {
+            return this.getProfile(
+              profile.membershipType,
+              profile.membershipId
+            ).pipe(
+              map(res => {
+                return res.Response.characters.data;
+              })
+            );
+          })
+        );
+      }),
+      map(res => {
+        const characters = [];
+        res.forEach(characterObject => {
+          if (characterObject) {
+            for (let i = 0; i < Object.keys(characterObject).length; i++) {
+              characters.push(characterObject[Object.keys(characterObject)[i]]);
+            }
           }
-        } catch (e) {
-          return '';
-        }
-      })
-      .distinctUntilChanged()
-      .switchMap((url) => {
-        this.characters.next(null);
-        if (url.length) {
-          return this.bHttp.get(url)
-            .map((res: Response) => res.json())
-            .catch((error: any) => Observable.throw(error.json().error || 'Server error'));
-        } else {
-          return Observable.empty();
-        }
-      })
-      .subscribe((res: bungie.AccountResponse) => {
+        });
         try {
-          this.characters.next(res.Response.data.characters);
-        } catch (e) {
-          console.log(e);
-        }
-      });
+          characters.sort((a, b) => new Date(b.dateLastPlayed).getTime() - new Date(a.dateLastPlayed).getTime());
+        } catch (e) {}
+        return characters;
+      })
+    );
+  }
 
-    this.subCharacter = Observable.combineLatest(
-      this.characters,
-      this.characterId
-    )
-      .map(([characters, characterId]) => {
-        let character = null;
-        if (characters && characters.length) {
-          if (characterId) {
-            character = characters.find(function (char) {
-              return char.characterBase.characterId === characterId;
+  getActivityHistoryForCharacter(
+    membershipType: number,
+    membershipId: string,
+    characterId: string,
+    mode = 'None',
+    count = 250,
+    page = 0
+  ): Observable<ServerResponse<DestinyActivityHistoryResults>> {
+    // tslint:disable-next-line:max-line-length
+    const url = `https://stats.bungie.net/Platform/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?mode=${mode}&count=${count}&page=${page}`;
+    return this.bHttp.get(url);
+  }
+
+  getActivitiesForAccount(
+    membershipType: number,
+    membershipId: string,
+    mode = 'None'
+  ): Observable<DestinyHistoricalStatsPeriodGroup[]> {
+    return this.getCharactersForAccount(membershipType, membershipId).pipe(
+      switchMap(characters => {
+        return observableForkJoin(
+          characters.map(character => {
+            return this.getActivityHistoryForCharacter(
+              character.membershipType,
+              character.membershipId,
+              character.characterId,
+              mode
+            ).pipe(
+              map(res => {
+                return res.Response.activities;
+              })
+            );
+          })
+        );
+      }),
+      map(res => {
+        const activities: DestinyHistoricalStatsPeriodGroup[] = [];
+        res.forEach(activitiesArray => {
+          try {
+            activitiesArray.forEach(activity => {
+              activities.push(activity);
             });
-          } else {
-            character = characters[0];
-          }
-        }
-        return character;
+          } catch (e) {}
+        });
+        activities.sort(
+          (a, b) => new Date(b.period).valueOf() - new Date(a.period).valueOf()
+        );
+        return activities;
       })
-      .distinctUntilChanged()
-      .subscribe((character: bungie.Character) => {
-        this.activeCharacter.next(character);
-      });
-
-    this.subActivityHistory = Observable.combineLatest(
-      this.activeCharacter,
-      this.activityMode,
-      this.activityPage
-    )
-      .map(([character, mode, page]) => {
-        try {
-          let membershipType = character.characterBase.membershipType;
-          let membershipId = character.characterBase.membershipId;
-          let characterId = character.characterBase.characterId;
-          this.characterId.next(characterId);
-          return 'https://www.bungie.net/d1/Platform/Destiny/Stats/ActivityHistory/'
-            + membershipType + '/' + membershipId + '/' + characterId + '/?mode=' + mode + '&count=7&page=' + page;
-        } catch (e) {
-          return '';
-        }
-      })
-      .distinctUntilChanged()
-      .switchMap((url) => {
-        this.activities.next([]);
-        this.noActivities.next(false);
-        if (url.length) {
-          return this.bHttp.get(url)
-            .map((res: Response) => res.json())
-            .catch((error: any) => Observable.throw(error.json().error || 'Server error'));
-        } else {
-          return Observable.empty();
-        }
-      })
-      .subscribe((res: bungie.ActivityHistoryResponse) => {
-        try {
-          if (!res.Response.data || !res.Response.data.activities || !res.Response.data.activities.length) {
-            this.noActivities.next(true);
-          }
-          this.activities.next(res.Response.data.activities);
-        } catch (e) {
-          console.log(e);
-        }
-      });
+    );
   }
-
-  ngOnDestroy() {
-    this.settingsService.activeName.next('');
-    this.subParams.unsubscribe();
-    this.subSearch.unsubscribe();
-    this.subAccount.unsubscribe();
-    this.subCharacter.unsubscribe();
-    this.subActivityHistory.unsubscribe();
-  }
-
 }

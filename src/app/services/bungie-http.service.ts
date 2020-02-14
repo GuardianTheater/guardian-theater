@@ -16,8 +16,18 @@ export class BungieHttpService {
   constructor(private http: HttpClient, private authService: AuthService) {
     this.error = new BehaviorSubject(null);
 
-    let initHeaders = new HttpHeaders();
-    initHeaders = initHeaders.set('X-API-Key', environment.bungie.apiKey);
+      case 'https://d1.guardian.theater':
+        this._apiKey = '97c176d9f0f144f0b70bb69a455234a6';
+        break;
+
+      case 'https://guardian.theater':
+        this._apiKey = 'fc91f657672b41189d2682be8eb51697';
+        break;
+    }
+  }
+
+  createAuthorizationHeader(headers: Headers) {
+    headers.append('x-api-key', this._apiKey);
   }
 
   get(url: string) {

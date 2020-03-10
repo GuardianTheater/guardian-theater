@@ -1,143 +1,145 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
+import {
+  Component,
+  HostListener,
+  Input,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+import { Router, ActivatedRoute, Params } from '@angular/router';
+import { Subscription, combineLatest as observableCombineLatest } from 'rxjs';
+import { gt } from '../gt.typings';
 import { ActivityService } from '../services/activity.service';
-import { BungieHttpService } from '../services/bungie-http.service';
-import { TwitchService } from '../services/twitch.service';
-import { XboxService } from '../services/xbox.service';
+import { GuardianService } from '../services/guardian.service';
 import { SettingsService } from '../services/settings.service';
-import { Subscription, Observable } from 'rxjs/Rx';
-import { Router } from '@angular/router';
+import { Instance, Video, GtApiService } from 'app/services/gtApi.service';
+import { DomSanitizer } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
   styleUrls: ['./activity.component.scss'],
-  providers: [
-    ActivityService
+  providers: [ActivityService, GuardianService],
+  animations: [
+    trigger('growInShrinkOut', [
+      transition('void => *', [
+        style({ height: 0 }),
+        animate('600ms ease-out', style({ height: '*' }))
+      ]),
+      transition('* => void', [
+        style({ height: '*' }),
+        animate('300ms ease-in', style({ height: 0 }))
+      ])
+    ])
   ]
 })
 export class ActivityComponent implements OnInit, OnDestroy {
-  @Input() activity: gt.Activity;
+  @Input() instance: Instance;
 
   private subs: Subscription[];
 
   public pgcr: gt.PostGameCarnageReport;
-  public membershipType: number;
+  public clips: gt.Clip[];
+  public filteredClips: gt.Clip[];
+  public links: gt.Links;
+  public mini: boolean;
+  public animationState;
+  public innerWidth: number;
+  public instanceId: string;
+  public loadingInstance: boolean;
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    window.innerWidth < 640 ? (this.mini = true) : (this.mini = false);
+  }
 
   constructor(
-    private activityService: ActivityService,
-    private bHttp: BungieHttpService,
-    public twitchService: TwitchService,
-    private xboxService: XboxService,
     private router: Router,
-    public settingsService: SettingsService
-  ) { }
+    public settingsService: SettingsService,
+    public sanitizer: DomSanitizer,
+    private activatedRoute: ActivatedRoute,
+    private http: HttpClient,
+    private gtApiService: GtApiService
+  ) {}
 
   ngOnInit() {
-    this.activityService.activity = this.activity;
     this.subs = [];
-    this.subs.push(this.activityService.membershipType
-      .subscribe(membershipType => this.membershipType = membershipType)
-    );
-    this.subs.push(this.activityService.pgcr
-      .subscribe((pgcr: gt.PostGameCarnageReport) => {
-        this.pgcr = pgcr;
-        if (pgcr && !pgcr.loading) {
-          pgcr.loading = {
-            message: '',
-            xbox: false,
-            twitch: false,
-            bungie: false
-          };
-        }
-        if (this.pgcr) {
-          pgcr.showClips = true;
-          let loadingArray = [];
-          this.pgcr.entries.forEach(entry => {
-            if (entry.player.bungieNetUserInfo && this.twitchService.twitch[entry.player.bungieNetUserInfo.membershipId]) {
-              loadingArray.push(this.twitchService.twitch[entry.player.bungieNetUserInfo.membershipId]);
-              this.subs.push(
-                this.twitchService.twitch[entry.player.bungieNetUserInfo.membershipId]
-                  .subscribe(twitch => entry.twitch = twitch)
-              );
-            }
-            if (this.membershipType === 1 && this.xboxService.xbox[entry.player.destinyUserInfo.displayName]) {
-              loadingArray.push(this.xboxService.xbox[entry.player.destinyUserInfo.displayName]);
-              this.subs.push(
-                this.xboxService.xbox[entry.player.destinyUserInfo.displayName]
-                  .subscribe(xbox => entry.xbox = xbox)
-              );
-            }
-          });
-          if (pgcr.activityDetails.mode === 14) {
-            this.pgcr.teams.forEach(team => {
-              team.trialsLink = 'https://trials.report/' + (team.entries[0].player.destinyUserInfo.membershipType === 1 ? 'xbox' : 'ps');
-              team.entries.forEach(entry => {
-                team.trialsLink += '/' + entry.player.destinyUserInfo.displayName;
-              });
-            });
-          }
+    this.subs.push(
+      this.activatedRoute.params.subscribe((params: Params) => {
+        this.instanceId = params['activityId'] ? params['activityId'] : '';
+
+        if (this.instanceId) {
+          this.loadingInstance = true;
+
           this.subs.push(
-            Observable.combineLatest(loadingArray)
-              .subscribe(
-                array => {
-                  let loading = {
-                    message: '',
-                    bungie: false,
-                    xbox: false,
-                    twitch: false
-                  };
-                  array.some(function(item) {
-                    if (item.bungieId && !item.checkedId) {
-                      loading.message = 'Fetching Twitch username for ' + item.displayName + '...';
-                      return true;
-                    }
-                    if (item.bungieId && !item.checkedResponse) {
-                      loading.message = 'Fetching Twitch videos for ' + item.displayName + '...';
-                      return true;
-                    }
-                    if (item.gamertag && !item.checked) {
-                      loading.message = 'Fetching Xbox clips for ' + item.gamertag + '...';
-                      return true;
-                    }
-                  });
-                  array.some(function(item) {
-                    if (item.bungieId && !item.checkedId) {
-                      return loading.bungie = true;
-                    }
-                  });
-                  array.some(function(item) {
-                    if (item.bungieId && !item.checkedResponse) {
-                      return loading.twitch = true;
-                    }
-                  });
-                  array.some(function(item) {
-                    if (item.gamertag && !item.checked) {
-                      return loading.xbox = true;
-                    }
-                  });
-                  pgcr.loading = loading;
+            this.gtApiService.getInstance(this.instanceId).subscribe(res => {
+              this.instance = res;
+
+              this.instance.videos.forEach(video => {
+                if (
+                  video.type === 'xbox' &&
+                  video.embedUrl.indexOf('xboxrecord.us') > -1
+                ) {
+                  const fetchEmbedUrl = video.embedUrl;
+                  video.embedUrl = '';
+                  this.subs.push(
+                    this.http.get(fetchEmbedUrl).subscribe((resp: any) => {
+                      try {
+                        video.embedUrl = resp.gameClips[0].gameClipUris[0].uri;
+                      } catch (e) {}
+                    })
+                  );
                 }
-              )
+              });
+              this.loadingInstance = false;
+            })
           );
         }
       })
     );
+
+    window.innerWidth < 640 ? (this.mini = true) : (this.mini = false);
+    this.filteredClips = [];
+    this.clips = [];
+    this.links = { guardian: {}, activity: {}, xbox: {} };
+    this.animationState = 'in';
+
+    this.subs.push(
+      this.settingsService.links.subscribe(links => (this.links = links))
+    );
+
+    if (this.instance) {
+      this.instance.videos.forEach(video => {
+        if (
+          video.type === 'xbox' &&
+          video.embedUrl.indexOf('xboxrecord.us') > -1
+        ) {
+          const fetchEmbedUrl = video.embedUrl;
+          video.embedUrl = '';
+          this.subs.push(
+            this.http.get(fetchEmbedUrl).subscribe((res: any) => {
+              try {
+                video.embedUrl = res.gameClips[0].gameClipUris[0].uri;
+              } catch (e) {}
+            })
+          );
+        }
+      });
+    }
   }
 
   ngOnDestroy() {
+    this.animationState = '';
     this.subs.forEach(sub => sub.unsubscribe());
   }
 
   toActivity(activityId) {
-    this.router.navigate([
-      '/activity', this.membershipType, activityId
-    ]);
+    this.router.navigate(['/activity', activityId]);
   }
 
-  toGuardian(displayName, characterId) {
-    this.router.navigate([
-      '/guardian', displayName, this.membershipType, characterId
-    ]);
+  toGuardian(membershipType, membershipId) {
+    this.router.navigate(['/guardian', membershipType, membershipId]);
   }
 
   toClip(pgcr: gt.PostGameCarnageReport, clip) {
@@ -148,6 +150,33 @@ export class ActivityComponent implements OnInit, OnDestroy {
       clip.entry.characterId,
       clip.video.gameClipId
     ]);
+  }
+
+  stopPropagation(event) {
+    event.stopPropagation();
+  }
+
+  route(route: any[]) {
+    this.router.navigate(route);
+  }
+}
+
+@Component({
+  selector: 'app-pgcr-entry',
+  templateUrl: './pgcr-entry.component.html',
+  styleUrls: ['./activity.component.scss']
+})
+export class PgcrEntryComponent {
+  // @Input() pgcr: gt.PostGameCarnageReport;
+  @Input() instance: Instance;
+  // @Input() entry: gt.Entry;
+  @Input() entry: Video;
+  @Input() links: gt.Links;
+
+  constructor(private router: Router) {}
+
+  toGuardian(membershipType, membershipId) {
+    this.router.navigate(['/guardian', membershipType, membershipId]);
   }
 
   stopPropagation(event) {

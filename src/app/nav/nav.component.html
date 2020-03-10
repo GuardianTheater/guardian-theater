@@ -1,40 +1,122 @@
 <div class="row align-middle">
-  <div *ngIf="ad" class="columns small-12 ad order-1 medium-order-5">
-    <ng2-adsense></ng2-adsense>
-  </div>
-  <div class="columns small-12 icon-menu row align-right order-2 medium-order-3">
-    <a class="donate" title="Take My Money" (click)="route(['/donate'])" angulartics2On="click" angularticsEvent="NavBarLink" angularticsCategory="DonateLink">
-      <span>Donate</span>
+  <div class="columns small-12 icon-menu align-right order-2 medium-order-3">
+    <a
+      title="Buy a shirt"
+      href="https://chrisfried.threadless.com/designs/guardian-theater-3000"
+      target="_blank"
+      angulartics2On="click"
+      angularticsEvent="NavBarLink"
+      angularticsCategory="ShirtLink"
+    >
+    <fa-icon [icon]="faTshirt"></fa-icon>
     </a>
-    <a title="Guardian Theater on Twitter" href="https://twitter.com/guardtheater" target="_blank" class="twitter" angulartics2On="click" angularticsEvent="NavBarLink" angularticsCategory="TwitterLink">
-      <span class="fi-social-twitter"></span>
+    <a
+      title="Buy me a coffee"
+      href="https://ko-fi.com/chrisfried"
+      target="_blank"
+      angulartics2On="click"
+      angularticsEvent="NavBarLink"
+      angularticsCategory="DonateLink"
+    >
+      <fa-icon [icon]="faCoffee"></fa-icon>
     </a>
-    <a class="discord" title="Join our Discord Server" href="https://discord.gg/0lADdhKdnv0jxTNP" target="_blank" angulartics2On="click" angularticsEvent="NavBarLink" angularticsCategory="DiscordLink">
-      <span>Discord</span>
+    <a
+      title="Guardian Theater on Twitter"
+      href="https://twitter.com/guardtheater"
+      target="_blank"
+      angulartics2On="click"
+      angularticsEvent="NavBarLink"
+      angularticsCategory="TwitterLink"
+    >
+      <fa-icon [icon]="faTwitter"></fa-icon>
     </a>
-    <a title="Github" href="https://github.com/GuardianTheater" target="_blank" angulartics2On="click" angularticsEvent="NavBarLink" angularticsCategory="GithubLink">
-      <span class="fi-social-github"></span>
+    <a
+      title="Join our Discord Server"
+      href="https://discord.gg/0lADdhKdnv0jxTNP"
+      target="_blank"
+      angulartics2On="click"
+      angularticsEvent="NavBarLink"
+      angularticsCategory="DiscordLink"
+    >
+      <fa-icon [icon]="faDiscord"></fa-icon>
     </a>
-    <a title="About Guardian Theater" (click)="route(['/about'])" angulartics2On="click" angularticsEvent="NavBarLink" angularticsCategory="AboutLink">
-      <span class="fi-info"></span>
+    <a
+      title="Github"
+      href="https://github.com/GuardianTheater"
+      target="_blank"
+      angulartics2On="click"
+      angularticsEvent="NavBarLink"
+      angularticsCategory="GithubLink"
+    >
+      <fa-icon [icon]="faGithub"></fa-icon>
     </a>
-    <a title="Settings" (click)="route(['/settings'])" angulartics2On="click" angularticsEvent="NavBarLink" angularticsCategory="SettingsLink">
-      <span class="fi-wrench"></span>
+    <a
+      title="About Guardian Theater"
+      (click)="route(['/about'])"
+      angulartics2On="click"
+      angularticsEvent="NavBarLink"
+      angularticsCategory="AboutLink"
+    >
+      <fa-icon [icon]="faInfoCircle"></fa-icon>
+    </a>
+    <a
+      title="Settings"
+      (click)="route(['/settings'])"
+      angulartics2On="click"
+      angularticsEvent="NavBarLink"
+      angularticsCategory="SettingsLink"
+    >
+      <fa-icon [icon]="faWrench"></fa-icon>
     </a>
   </div>
   <div class="logo-wrap small-2 medium-12 columns order-3 medium-order-1">
     <a (click)="route(['/'])" class="home">
-      <img class="logo" src="/assets/images/travelereel.png">
+      <img class="logo" [src]="dark ? '/assets/images/gt3kdark.png' : '/assets/images/gt3klight.png'" />
     </a>
   </div>
-  <div class="small-10 medium-12 columns order-4 medium-order-2">
+  <div class="small-10 medium-12 columns order-4 medium-order-4">
     <form class="row search-form" (ngSubmit)="search()">
       <div class="small-12 columns input-group search-bar">
-        <input [(ngModel)]="searchString" name="searchString" text="quick-links" class="input-group-field search-box" type="search" placeholder="Guardian" autofocus="true">
+        <input
+          [(ngModel)]="searchString"
+          name="searchString"
+          text="quick-links"
+          class="input-group-field search-box"
+          type="search"
+          placeholder="Guardian"
+          autofocus="true"
+        />
         <div class="input-group-button">
           <button type="submit" class="button search-button">Go</button>
         </div>
       </div>
     </form>
   </div>
+  <app-bungie-status
+    class="small-12 columns order-5 medium-order-5"
+  ></app-bungie-status>
+  <div
+    *ngIf="errorRes && errorRes.ErrorCode && errorRes.Message"
+    class="small-12 columns order-5 medium-order-5"
+  >
+    <div class="callout warning">
+      <h5>Bungie API Error Code {{ errorRes.ErrorCode }}</h5>
+      <p [innerHTML]="errorRes.Message"></p>
+    </div>
+  </div>
+
+    <div class="columns small-12 button-group expanded order-5 medium-order-5">
+      <button *ngIf="!(currentMemberId | async)" type="button" class="button" (click)="login(true)"
+        title="Login">
+        Login
+      </button>
+      <button *ngIf="currentMemberId | async" type="button" class="button" (click)="logout()"
+        title="Logout">
+        Logout
+      </button>
+      <button *ngIf="currentMemberId | async" type="button" class="button" (click)="currentProfile()"
+        title="My Profile">
+        My Profile
+      </button>
+    </div>
 </div>

@@ -1,96 +1,196 @@
 @import '../../variables';
+
 .activity {
   margin-bottom: 1em;
+  max-width: 100%;
+  overflow: hidden;
 }
+
+.activity-header {
+  cursor: initial;
+
+  &.clickable {
+    cursor: pointer;
+  }
+}
+
 .mode {
-  background: rgba(48,56,65,1);
+  background: rgba(48, 56, 65, 1);
   color: white;
-  padding: 0 .5em;
+  padding: 0 0.5em;
   height: 28px;
   line-height: 28px;
+  transition-property: background-color;
+  transition-duration: 600ms;
+  transition-timing-function: ease-out;
 }
-.mode-5, .mode-8, .mode-9, .mode-10, .mode-11, .mode-12, .mode-13, .mode-14, .mode-15, .mode-19, .mode-23, .mode-24, .mode-26, .mode-27, .mode-28, .mode-29, .mode-31, .mode-32, .mode-34, .mode-35 {
-  background-color: $crucible-red;
-  &.spinner-block, .activity-info {
-    @include background-hover-darken($crucible-red);
+
+.mode-no-clips {
+  background-color: $no-clips-grey;
+  transition-duration: 300ms;
+  transition-timing-function: ease-in;
+
+  :host-context(.dark) & {
+    background-color: $dark-mode-no-clips-grey;
+  }
+
+  &.spinner-block,
+  .activity-info,
+  .activity-count {
+    @include background-hover-darken($no-clips-grey);
+  }
+
+  :host-context(.dark) &.spinner-block,
+  .activity-info,
+  .activity-count {
+    @include background-hover-darken($dark-mode-no-clips-grey);
   }
 }
-.mode-2 {
-  background-color: $story-orange;
-  &.spinner-block, .activity-info {
-    @include background-hover-darken($story-orange);
+
+// No Mode
+.mode-category-0 {
+  transition-duration: 600ms;
+  background-color: rgba(48, 56, 65, 1);
+
+  &.spinner-block,
+  .activity-info,
+  .activity-count {
+    @include background-hover-darken(rgba(48, 56, 65, 1));
   }
 }
-.mode-3, .mode-16, .mode-17, .mode-18 {
+
+// Story
+.mode-category-1 {
+  transition-duration: 600ms;
   background-color: $strike-blue;
-  &.spinner-block, .activity-info {
+
+  &.spinner-block,
+  .activity-info,
+  .activity-count {
     @include background-hover-darken($strike-blue);
   }
 }
-.mode-4, .mode-20, .mode-21, .mode-22, .mode-30 {
-  background-color: $raid-blue;
-  &.spinner-block, .activity-info {
-    @include background-hover-darken($raid-blue);
+
+// Crucible
+.mode-category-2 {
+  transition-duration: 600ms;
+  background-color: $crucible-red;
+
+  &.spinner-block,
+  .activity-info,
+  .activity-count {
+    @include background-hover-darken($crucible-red);
   }
 }
-.mode-6 {
-  background-color: $patrol-green;
-  &.spinner-block, .activity-info {
-    @include background-hover-darken($patrol-green);
+// Iron Banner
+.mode-category-3 {
+  transition-duration: 600ms;
+  background-color: $gambit-green;
+
+  &.spinner-block,
+  .activity-info,
+  .activity-count {
+    @include background-hover-darken($gambit-green);
   }
 }
-.mode-no-clips {
-  background-color: $no-clips-grey;
-  &.spinner-block, .activity-info {
-    @include background-hover-darken($no-clips-grey);
-  }
-}
-.activity-time {
+
+.activity-time,
+.twitch-timestamp,
+.mixer-timestamp {
   font-weight: 200;
-  font-size: .75em;
+  font-size: 0.75em;
   text-align: right;
-  padding-right: .5em;
-  flex-shrink: 3;
+  padding-right: 0.5em;
+  flex: 1 0 auto;
 }
+
+.activity-icon {
+  height: 28px;
+  width: 28px;
+  border-right: 1px solid white;
+  flex-shrink: 0;
+
+  img {
+    height: 28px;
+    width: 28px;
+    margin-top: -2px;
+    margin-left: 0px;
+    max-width: 28px;
+  }
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
+}
+
 .activity-permalinks {
   font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
-.activity-permalinks a, .activity-permalinks a:hover, .activity-permalinks a:active, .activity-permalinks a:visited {
+
+.activity-permalinks a,
+.activity-permalinks a:hover,
+.activity-permalinks a:active,
+.activity-permalinks a:visited {
   color: white;
   display: inline-block;
   opacity: 0.5;
 }
+
 .activity-permalinks span {
   opacity: 0.5;
 }
-.activity-permalinks a:hover, .activity-permalinks a:active, .activity-permalinks a:visited {
+
+.activity-permalinks a:hover,
+.activity-permalinks a:active,
+.activity-permalinks a:visited {
   opacity: 1;
 }
 
 .clips {
   margin-top: 1em;
+  overflow: hidden;
+
+  &.no-clips {
+    margin: 0;
+  }
 }
+
 .clip-item {
-  margin: 0 1em 1em;
+  margin: 0 1em;
 }
+
+.clip-item-wrapper {
+  overflow: hidden;
+  margin: 0 0 1em;
+}
+
 .clip-item:nth-last-child(1) {
   margin-bottom: 0;
 }
 
 .clip-wrapper {
-	position: relative;
+  position: relative;
   overflow: hidden;
   border-top: 1px solid white;
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
+
 .clip-wrapper:before {
   display: block;
-  content: "";
+  content: '';
   width: 100%;
   padding-top: 56.25%;
 }
-.clip-wrapper > div, .twitch-embed, .xbox-embed {
+
+.clip-wrapper > div,
+.twitch-embed,
+.mixer-embed,
+.xbox-embed {
   position: absolute;
   margin-left: 0 !important;
   top: 0;
@@ -100,19 +200,22 @@
   width: 100%;
   height: 100%;
 }
+
 .xbox-embed {
   cursor: pointer;
 }
+
 .clip-thumbnail {
   cursor: pointer;
   position: absolute;
   margin-left: 0 !important;
-  top: -16.75%;
+  // top: -16.75%;
   left: 0;
   right: 0;
   bottom: 0;
   width: 100%;
 }
+
 .clip-play-button {
   cursor: pointer;
   position: absolute;
@@ -123,10 +226,29 @@
   bottom: 0;
   width: 100%;
   background-color: #ddd;
+  color: white;
+  font-size: 8em;
+  display: flex;
+
+  .fi-play {
+    margin: auto;
+  }
+
+  &.mixer {
+    background-color: darken($mixer-blue, 25%);
+  }
+
+  &.twitch {
+    background-color: darken($twitch-purple, 25%);
+  }
 }
 
 .mode.loading {
-  margin-left: .9375rem;
+  margin-left: 0.9375rem;
+}
+
+.mini-spinner {
+  display: inline-block;
 }
 
 .spinner-block {
@@ -136,16 +258,23 @@
   text-align: center;
   font-size: 3em;
   font-weight: bold;
-  cursor: pointer;
   max-height: 84px;
   height: 84px;
   line-height: 84px;
   padding: 0;
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
 
 .date-block {
   border-top: 1px solid white;
   border-right: 1px solid white;
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
 
 .spinner-block.pgcr {
@@ -154,40 +283,67 @@
 
 .pgcr {
   max-height: 85px;
-  overflow: hidden
+  overflow: hidden;
+}
+
+.pgcr-block {
+  overflow: hidden;
 }
 
 .pgcr.pgcr-full {
   max-height: none;
+  border-right: 1px solid white;
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
 
 .spinner {
   -webkit-animation: spin 3s infinite linear;
   animation: spin 3s infinite linear;
 }
+
 .pgcr-spinner-wrapper {
   text-align: center;
 }
+
 .pgcr-spinner {
-  display: block;
-  color: white;
+  display: inline-block;
+  width: 75px;
+  text-align: center;
+  font-size: 75px;
+  line-height: 75px;
+  height: 75px;
+  color: $light-purple;
 }
+
 .player-spinner {
   display: block;
   position: relative;
 }
+
 .bungie-spinner {
   position: absolute;
   left: 0;
   width: 100%;
   color: white;
 }
+
 .twitch-spinner {
   position: absolute;
   left: 0;
   width: 100%;
   color: white;
 }
+
+.mixer-spinner {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  color: white;
+}
+
 .xbox-spinner {
   position: absolute;
   left: 0;
@@ -198,6 +354,7 @@
 .half-spinner-a {
   clip-path: polygon(0 0, 50% 0, 50% 100%, 0% 100%);
 }
+
 .half-spinner-b {
   clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
 }
@@ -205,21 +362,33 @@
 .third-spinner-a {
   clip-path: polygon(0 0, 50% 0, 50% 50%, 0 80%);
 }
+
 .third-spinner-b {
   clip-path: polygon(50% 0, 100% 0, 100% 80%, 50% 50%);
 }
+
 .third-spinner-c {
   clip-path: polygon(0 80%, 50% 50%, 100% 80%, 100% 100%, 0 100%);
 }
-@-webkit-keyframes spin
-{  
-0%   {-webkit-transform: rotate(0deg);}  
-100% {-webkit-transform: rotate(360deg);}  
+
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
 }
-@keyframes spinX
-{  
-0%   {transform: rotate(0deg);}  
-100% {transform: rotate(360deg);}  
+
+@keyframes spinX {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .activity-title-bar {
@@ -234,39 +403,58 @@
   display: flex;
   padding: 0;
 
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
+
   .no-clips & {
-    opacity: .75;
+    opacity: 0.75;
   }
 }
-.pgcr-no-teams .pgcr-entry:nth-child(even), .pgcr-entry.Bravo, .clip-item .pgcr-entry {
+
+.pgcr-no-teams .pgcr-entry:nth-child(even),
+.pgcr-entry.Bravo,
+.clip-item .pgcr-entry {
   border-right: none;
 }
+
 .activity-info {
   flex-grow: 1;
   display: flex;
 }
-.pgcr-entry-name, .activity-name {
+
+.pgcr-entry-name,
+.activity-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-grow: 1;
-  padding-left: .5em;
-  padding-right: .5em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 
-.pgcr-team-name, .pgcr-team-score {
-  padding-right: .5em;
-  cursor: initial;
+.pgcr-entry-name {
+  @include background-hover-darken(rgba(48, 56, 65, 1));
 }
+
+.pgcr-team-name,
+.pgcr-team-score {
+  padding-right: 0.5em;
+}
+
 .pgcr-team-name {
-  padding-left: .5em;
+  padding-left: 0.5em;
   flex-grow: 1;
 }
+
 .pgcr-team-score {
   text-align: right;
 }
 
-.profile-link, .activity-link, .xbox-clip-link {
+.profile-link,
+.activity-link,
+.xbox-clip-link,
+.activity-count {
   background-size: 1em;
   width: 28px;
   min-width: 28px;
@@ -277,18 +465,36 @@
   border-left: 1px solid white;
   color: white;
   text-align: center;
+  font-weight: bold;
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
 
-.profile-link.bungie, .activity-link.bungie {
-  background-image: url('/assets/images/bungie-white.png');  
+.activity-count {
+  border-left: none;
+  border-right: 1px solid white;
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
-.profile-link.bungie:hover, .activity-link.bungie:hover {
+
+.profile-link.bungie,
+.activity-link.bungie {
+  background-image: url('/assets/images/bungie-white.png');
+}
+
+.profile-link.bungie:hover,
+.activity-link.bungie:hover {
   background-color: $bungie-blue;
 }
 
 .profile-link.trials {
   background-image: url('/assets/images/trials-white.png');
 }
+
 .profile-link.trials:hover {
   background-color: $trials-yellow;
 }
@@ -296,21 +502,36 @@
 .profile-link.twitch {
   background-image: url('/assets/images/twitch-white.png');
 }
+
 .profile-link.twitch:hover {
   background-color: $twitch-purple;
 }
 
-.profile-link.tracker, .activity-link.tracker {
+.profile-link.mixer {
+  background-image: url('/assets/images/mixer-white.png');
+}
+
+.profile-link.mixer:hover {
+  background-color: $mixer-blue;
+}
+
+.profile-link.tracker,
+.activity-link.tracker {
   background-image: url('/assets/images/tracker-white.png');
 }
-.profile-link.tracker:hover, .activity-link.tracker:hover {
+
+.profile-link.tracker:hover,
+.activity-link.tracker:hover {
   background-color: $destiny-tracker-grey;
 }
 
-.profile-link.ggg, .activity-link.ggg {
+.profile-link.ggg,
+.activity-link.ggg {
   background-image: url('/assets/images/ggg-white.png');
 }
-.profile-link.ggg:hover, .activity-link.ggg:hover {
+
+.profile-link.ggg:hover,
+.activity-link.ggg:hover {
   background-color: $guardian-gg-grey;
 }
 
@@ -323,49 +544,60 @@
 }
 
 .profile-link.platform.xbox {
-
   &:hover {
     background-color: $xbox-green;
   }
 }
 
-.profile-link.options:hover, .activity-link.options:hover {
+.profile-link.options:hover,
+.activity-link.options:hover {
   background-color: $dark-blue;
 }
 
 .Alpha {
   background-color: $alpha-blue;
-  &.pgcr-entry .pgcr-entry-name {
+
+  &.pgcr-entry ::ng-deep .pgcr-entry-name {
     @include background-hover-darken($alpha-blue);
   }
 }
+
 .Bravo {
   background-color: $bravo-orange;
-  &.pgcr-entry .pgcr-entry-name {
+
+  &.pgcr-entry ::ng-deep .pgcr-entry-name {
     @include background-hover-darken($bravo-orange);
   }
 }
+
 .Team {
   background-color: $blueberry-blue;
-  &.pgcr-entry .pgcr-entry-name {
+
+  &.pgcr-entry ::ng-deep .pgcr-entry-name {
     @include background-hover-darken($blueberry-blue);
   }
 }
+
 .Opponent {
   background-color: $opponent-red;
-  &.pgcr-entry .pgcr-entry-name {
+
+  &.pgcr-entry ::ng-deep .pgcr-entry-name {
     @include background-hover-darken($opponent-red, $crucible-red);
   }
 }
+
 .Fireteam {
   background-color: $fireteam-green;
-  &.pgcr-entry .pgcr-entry-name {
+
+  &.pgcr-entry ::ng-deep .pgcr-entry-name {
     @include background-hover-darken($fireteam-green);
   }
 }
+
 .Player {
   background-color: $fireteam-green;
-  &.pgcr-entry .pgcr-entry-name {
+
+  &.pgcr-entry ::ng-deep .pgcr-entry-name {
     @include background-hover-darken($fireteam-green);
   }
 }
@@ -374,21 +606,44 @@
   border-top: 1px solid white;
   display: flex;
   @include background-hover-darken($twitch-purple);
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
+
+.mixer-banner {
+  border-top: 1px solid white;
+  display: flex;
+  @include background-hover-darken($mixer-blue);
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
+}
+
 .xbox-banner {
   border-top: 1px solid white;
   display: flex;
   background-color: $xbox-green;
   padding-right: 0;
   cursor: initial;
+
+  :host-context(.dark) & {
+    border-color: $dark-mode-background;
+  }
 }
-.twitch-clip-name, .xbox-clip-name {
+
+.twitch-clip-name,
+.mixer-clip-name,
+.xbox-clip-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-grow: 1;
-  padding-right: .5em;
+  padding-right: 0.5em;
 }
+
 .xbox-clip-link {
   color: white;
   text-align: center;
@@ -405,20 +660,20 @@
 
 .player-label {
   background: white;
-  border-radius: .25em;
+  border-radius: 0.25em;
   line-height: 1.2em;
-  padding: 0 .3em;
-  font-size: .6rem;
+  padding: 0 0.3em;
+  font-size: 0.6rem;
   cursor: inherit;
   vertical-align: middle;
 }
 
 .player-label.Patron {
-  color: $patreon-orange;  
+  color: $patreon-orange;
 }
 
 .player-label.Donor {
-  color: $donor-blue;  
+  color: $donor-blue;
 }
 
 .player-label.Shirt.Haver {
@@ -426,9 +681,9 @@
 }
 
 .player-label.Contributor {
-  color: $contributor-purple;  
+  color: $contributor-purple;
 }
 
-.player-label.Owner {
-  color: $owner-purple;  
+.player-label.Creator {
+  color: $owner-purple;
 }

@@ -1,32 +1,40 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/Rx';
-import { LocalStorageService } from 'angular-2-local-storage';
+import { BehaviorSubject } from 'rxjs';
+import { gt } from '../gt.typings';
+import { UserInfoCard } from 'bungie-api-ts/user';
 
 @Injectable()
 export class SettingsService {
   private _clipLimiter: gt.ClipLimiter;
   private _links: gt.Links;
+  private _dark: boolean;
 
   public clipLimiter: BehaviorSubject<gt.ClipLimiter>;
   public links: BehaviorSubject<gt.Links>;
-  public activeName: BehaviorSubject<string>;
+  public activeProfiles: BehaviorSubject<UserInfoCard[]>;
   public userLang: {
-    language?: string
+    language?: string;
   };
+  public userLangObs: BehaviorSubject<{
+    language?: string;
+  }>;
+  public dark: BehaviorSubject<boolean>;
 
-  constructor(
-    private localStorageService: LocalStorageService
-  ) {
-    this._clipLimiter = this.localStorageService.get('CLIP_LIMITER') || {
+  constructor() {
+    this._clipLimiter = JSON.parse(localStorage.getItem('gt.CLIP_LIMITER')) || {
       self: true,
       fireteam: true,
       team: true,
-      opponents: true,
-      xbox: true,
-      twitch: true
+      opponents: true
     };
 
-    this._links = this.localStorageService.get('LINKS') || {};
+    this._links = JSON.parse(localStorage.getItem('gt.LINKS')) || {};
+
+    if (localStorage.getItem('gt.DARK') !== null) {
+      this._dark = JSON.parse(localStorage.getItem('gt.DARK')) || false;
+    } else {
+      this._dark = true;
+    }
 
     if (!this._links.activity) {
       this._links.activity = {
@@ -41,10 +49,11 @@ export class SettingsService {
     if (!this._links.guardian) {
       this._links.guardian = {
         bungie: false,
-        twitch: false,
+        twitch: true,
+        mixer: true,
         tracker: false,
         ggg: false,
-        options: true,
+        options: false,
         platform: false
       };
     }
@@ -57,29 +66,30 @@ export class SettingsService {
         gamedtv: false,
         xbox: true,
         download: true,
-        options: true
+        options: false
       };
     }
 
     this.clipLimiter = new BehaviorSubject(this._clipLimiter);
     this.links = new BehaviorSubject(this._links);
-    this.activeName = new BehaviorSubject('');
+    this.activeProfiles = new BehaviorSubject([]);
+    this.dark = new BehaviorSubject(this._dark);
 
     this.userLang = {
       language: 'en'
     };
-    if (this.localStorageService.get('LANGUAGE')) {
-      this.userLang = this.localStorageService.get('LANGUAGE');
+    if (JSON.parse(localStorage.getItem('gt.LANGUAGE'))) {
+      this.userLang = JSON.parse(localStorage.getItem('gt.LANGUAGE'));
     } else if (navigator.language) {
       switch (navigator.language.substr(0, 2)) {
-        case 'de':
-          this.userLang.language = 'de';
+        case 'fr':
+          this.userLang.language = 'fr';
           break;
         case 'es':
           this.userLang.language = 'es';
           break;
-        case 'fr':
-          this.userLang.language = 'fr';
+        case 'de':
+          this.userLang.language = 'de';
           break;
         case 'it':
           this.userLang.language = 'it';
@@ -88,38 +98,66 @@ export class SettingsService {
           this.userLang.language = 'ja';
           break;
         case 'pt':
-          this.userLang.language = 'ptbr';
+          this.userLang.language = 'pt-br';
+          break;
+        case 'ru':
+          this.userLang.language = 'ru';
+          break;
+        case 'pl':
+          this.userLang.language = 'pl';
+          break;
+        case 'ko':
+          this.userLang.language = 'pl';
+          break;
+        case 'zh':
+          this.userLang.language = 'zh-cht';
+          break;
+      }
+      switch (navigator.language) {
+        case 'es-mx':
+          this.userLang.language = 'es-mx';
+          break;
+        case 'zh-chs':
+          this.userLang.language = 'zh-chs';
           break;
       }
     }
+    this.userLangObs = new BehaviorSubject(this.userLang);
   }
 
   set toggleLimit(limit) {
     this._clipLimiter[limit] = !this._clipLimiter[limit];
     this.clipLimiter.next(this._clipLimiter);
-    this.localStorageService.set('CLIP_LIMITER', this._clipLimiter);
+    localStorage.setItem('gt.CLIP_LIMITER', JSON.stringify(this._clipLimiter));
   }
 
   set toggleGuardianLink(link) {
     this._links.guardian[link] = !this._links.guardian[link];
     this.links.next(this._links);
-    this.localStorageService.set('LINKS', this._links);
+    localStorage.setItem('gt.LINKS', JSON.stringify(this._links));
   }
 
   set toggleActivityLink(link) {
     this._links.activity[link] = !this._links.activity[link];
     this.links.next(this._links);
-    this.localStorageService.set('LINKS', this._links);
+    localStorage.setItem('gt.LINKS', JSON.stringify(this._links));
   }
 
   set toggleXboxLink(link) {
     this._links.xbox[link] = !this._links.xbox[link];
     this.links.next(this._links);
-    this.localStorageService.set('LINKS', this._links);
+    localStorage.setItem('gt.LINKS', JSON.stringify(this._links));
+  }
+
+  toggleDark() {
+    this._dark = !this._dark;
+    this.dark.next(this._dark);
+    localStorage.setItem('gt.DARK', JSON.stringify(this._dark));
   }
 
   set setLanguage(language) {
     this.userLang.language = language;
-    this.localStorageService.set('LANGUAGE', this.userLang);
+    localStorage.setItem('gt.LANGUAGE', JSON.stringify(this.userLang));
+    this.userLangObs.next(this.userLang);
   }
 }

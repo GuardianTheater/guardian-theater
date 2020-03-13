@@ -11,17 +11,19 @@ import {
   faTshirt,
   faCoffee,
   faInfoCircle,
-  faWrench
+  faWrench,
 } from '@fortawesome/free-solid-svg-icons';
 import {
   faDiscord,
   faTwitter,
-  faGithub
+  faGithub,
 } from '@fortawesome/free-brands-svg-icons';
+import { environment } from 'environments/environment';
+import { JwtHelperService } from '@auth0/angular-jwt';
 @Component({
   selector: 'app-nav',
   templateUrl: './nav.component.html',
-  styleUrls: ['./nav.component.scss']
+  styleUrls: ['./nav.component.scss'],
 })
 export class NavComponent implements OnInit, OnDestroy {
   faInfoCircle = faInfoCircle;
@@ -38,7 +40,6 @@ export class NavComponent implements OnInit, OnDestroy {
   };
   public errorRes: ServerResponse<any>;
   public dark: boolean;
-  public currentMemberId: BehaviorSubject<string>;
 
   private _errorRes$: Subscription;
   private _routerEvent$: Subscription;
@@ -47,26 +48,23 @@ export class NavComponent implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private router: Router,
     private bHttp: BungieHttpService,
-    private authService: AuthService
+    public authService: AuthService,
+    private helper: JwtHelperService,
   ) {}
 
   ngOnInit() {
-    this.currentMemberId = new BehaviorSubject('');
-    this.login(false);
-
     this.searchString = localStorage.getItem('gt.LAST_SEARCH') || '';
 
     this.settingsService.dark.subscribe(dark => (this.dark = dark));
     this._routerEvent$ = this.router.events.subscribe((event: Event) => {
       this.errorRes = null;
-      this.login(false);
     });
     this._errorRes$ = this.bHttp.error.subscribe(res => (this.errorRes = res));
 
     this.betaTextHidden = JSON.parse(
-      localStorage.getItem('gt.hideBetaText')
+      localStorage.getItem('gt.hideBetaText'),
     ) || {
-      hidden: false
+      hidden: false,
     };
   }
 
@@ -89,20 +87,13 @@ export class NavComponent implements OnInit, OnDestroy {
     this.betaTextHidden.hidden = true;
     localStorage.setItem(
       'gt.hideBetaText',
-      JSON.stringify(this.betaTextHidden)
+      JSON.stringify(this.betaTextHidden),
     );
   }
 
   login(force: boolean) {
-    this.authService
-      .getCurrentMemberId(force)
-      .pipe(
-        take(1),
-        map((memberId: string) => {
-          this.currentMemberId.next(memberId);
-        })
-      )
-      .subscribe();
+    const url = `${environment.api.baseUrl}/auth/bungie`;
+    window.location.href = url;
   }
 
   getMembershipsForCurrentUser(): Observable<
@@ -113,22 +104,16 @@ export class NavComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.authService.signOut();
-    this.currentMemberId.next('');
-    this.login(false);
+    localStorage.removeItem('gtapi_access_token');
+    localStorage.removeItem('refreshToken');
+    this.authService.token.next({});
   }
 
   currentProfile() {
-    this.getMembershipsForCurrentUser().subscribe(res => {
-      try {
-        this.router.navigate([
-          '/guardian',
-          res.Response.destinyMemberships[0].membershipType,
-          res.Response.destinyMemberships[0].membershipId,
-          'None',
-          0
-        ]);
-      } catch (e) {}
-    });
+    try {
+      const jwt = localStorage.getItem('gtapi_access_token');
+      const token = this.helper.decodeToken(jwt);
+      this.router.navigate(['/guardian', '254', token.membershipId]);
+    } catch (e) {}
   }
 }

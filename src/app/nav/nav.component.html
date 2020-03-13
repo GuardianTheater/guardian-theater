@@ -8,7 +8,7 @@
       angularticsEvent="NavBarLink"
       angularticsCategory="ShirtLink"
     >
-    <fa-icon [icon]="faTshirt"></fa-icon>
+      <fa-icon [icon]="faTshirt"></fa-icon>
     </a>
     <a
       title="Buy me a coffee"
@@ -71,7 +71,12 @@
   </div>
   <div class="logo-wrap small-2 medium-12 columns order-3 medium-order-1">
     <a (click)="route(['/'])" class="home">
-      <img class="logo" [src]="dark ? '/assets/images/gt3kdark.png' : '/assets/images/gt3klight.png'" />
+      <img
+        class="logo"
+        [src]="
+          dark ? '/assets/images/gt3kdark.png' : '/assets/images/gt3klight.png'
+        "
+      />
     </a>
   </div>
   <div class="small-10 medium-12 columns order-4 medium-order-4">
@@ -105,18 +110,40 @@
     </div>
   </div>
 
-    <div class="columns small-12 button-group expanded order-5 medium-order-5">
-      <button *ngIf="!(currentMemberId | async)" type="button" class="button" (click)="login(true)"
-        title="Login">
-        Login
-      </button>
-      <button *ngIf="currentMemberId | async" type="button" class="button" (click)="logout()"
-        title="Logout">
-        Logout
-      </button>
-      <button *ngIf="currentMemberId | async" type="button" class="button" (click)="currentProfile()"
-        title="My Profile">
-        My Profile
-      </button>
-    </div>
+  <div class="columns small-12 button-group expanded order-5 medium-order-5">
+    <button
+      *ngIf="
+        !(authService.token | async) ||
+        !(authService.token | async).membershipId
+      "
+      type="button"
+      class="button"
+      (click)="login(true)"
+      title="Login"
+    >
+      Login
+    </button>
+    <button
+      *ngIf="
+        (authService.token | async) && (authService.token | async).membershipId
+      "
+      type="button"
+      class="button"
+      (click)="logout()"
+      title="Logout"
+    >
+      Logout
+    </button>
+    <button
+      *ngIf="
+        (authService.token | async) && (authService.token | async).membershipId
+      "
+      type="button"
+      class="button"
+      (click)="currentProfile()"
+      title="My Profile"
+    >
+      My Profile
+    </button>
+  </div>
 </div>

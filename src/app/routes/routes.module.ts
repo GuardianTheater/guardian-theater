@@ -13,28 +13,28 @@ import { AuthComponent } from 'app/auth/auth.component';
 const appRoutes: Routes = [
   {
     path: 'activity/:activityId/:clipId',
-    component: ActivityComponent
+    component: ActivityComponent,
   },
   {
     path: 'activity/:activityId',
-    component: ActivityComponent
+    component: ActivityComponent,
   },
   { path: 'settings', component: SettingsComponent },
-  { path: 'login/success/:jwt', component: AuthComponent },
-  { path: 'auth', component: AuthComponent },
+  { path: 'login/success/:jwt/:refreshToken', component: AuthComponent },
+  { path: 'login/failure', component: AuthComponent },
   { path: 'about', component: AboutComponent },
   { path: 'donate', component: TakeMyMoneyComponent },
   { path: 'search/:guardian', component: SearchComponent },
   {
     path: 'guardian/:membershipType/:membershipId',
-    component: GuardianComponent
+    component: GuardianComponent,
   },
   { path: '', component: FrontPageComponent },
-  { path: '**', redirectTo: '', pathMatch: 'full' }
+  { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(appRoutes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class RoutesModule {}

@@ -70,11 +70,7 @@ export function tokenGetter() {
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        whitelistedDomains: [
-          'localhost:3000',
-          'api.guardian.theater',
-          'beta.guardian.theater'
-        ],
+        whitelistedDomains: ['localhost:3000', 'api.guardian.theater'],
         blacklistedRoutes: []
       }
     }),

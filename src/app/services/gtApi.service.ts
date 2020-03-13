@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BungieMembershipType } from 'bungie-api-ts/user';
 import { Observable } from 'rxjs';
 import { DestinyActivityModeType } from 'bungie-api-ts/destiny2';
+import { environment } from 'environments/environment';
 
 @Injectable()
 export class GtApiService {
@@ -10,19 +11,22 @@ export class GtApiService {
 
   getEncounteredClips(
     membershipType: BungieMembershipType,
-    membershipId: string
+    membershipId: string,
   ): Observable<EncounteredClips> {
-    const url = `https://api.guardian.theater/encounteredClips/${membershipType}/${membershipId}`;
+    // const url = `https://api.guardian.theater/encounteredClips/${membershipType}/${membershipId}`;
+    const url = `${environment.api.baseUrl}/encounteredClips/${membershipType}/${membershipId}`;
     return this.http.get(url) as Observable<EncounteredClips>;
   }
 
   getInstance(instanceId: string): Observable<Instance> {
-    const url = `https://api.guardian.theater/instance/${instanceId}`;
+    // const url = `https://api.guardian.theater/instance/${instanceId}`;
+    const url = `${environment.api.baseUrl}/instance/${instanceId}`;
     return this.http.get(url) as Observable<Instance>;
   }
 
   getStreamerVsStreamer() {
-    const url = `https://api.guardian.theater/streamervsstreamer`;
+    // const url = `https://api.guardian.theater/streamervsstreamer`;
+    const url = `${environment.api.baseUrl}/streamervsstreamer`;
     return this.http.get(url) as Observable<Instance[]>;
   }
 }

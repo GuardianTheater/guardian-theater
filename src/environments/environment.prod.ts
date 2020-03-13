@@ -1,6 +1,7 @@
-import { bungieProd } from './keys';
+import { bungieProd, apiProd } from './keys';
 
 export const environment = {
   production: true,
-  bungie: bungieProd
+  bungie: bungieProd,
+  api: apiProd,
 };

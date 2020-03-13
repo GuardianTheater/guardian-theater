@@ -1,5 +1,5 @@
 <div
-  *ngIf="!profiles && !profiles.length && loadingAccounts"
+  *ngIf="(!profiles || !profiles.length) && loadingAccounts"
   class="profile-spinner-wrapper"
 >
   <div

@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1584482944109,
+  "timestamp": 1584551874248,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -10,7 +10,7 @@
       "urls": [
         "/favicon.ico",
         "/index.html",
-        "/main.b7756363e618cd9aac39.js",
+        "/main.46cff69ba5f44d67a7c9.js",
         "/manifest.webmanifest",
         "/polyfills-es5.cf58f14205eeca4ba5c2.js",
         "/runtime.d61d63ed52fa2d034eb2.js",
@@ -48,6 +48,7 @@
         "/assets/images/apple-icon-76x76.png",
         "/assets/images/apple-icon-precomposed.png",
         "/assets/images/apple-icon.png",
+        "/assets/images/blizz.png",
         "/assets/images/bungie-white.png",
         "/assets/images/discord.png",
         "/assets/images/favicon-16x16.png",
@@ -68,6 +69,8 @@
         "/assets/images/patreon.png",
         "/assets/images/ps.jpg",
         "/assets/images/ps.png",
+        "/assets/images/stadia.png",
+        "/assets/images/steam.png",
         "/assets/images/supporter-white.png",
         "/assets/images/supporter.png",
         "/assets/images/takemymoneypurple.png",
@@ -78,8 +81,7 @@
         "/assets/images/trials-white.png",
         "/assets/images/twitch-purple.png",
         "/assets/images/twitch-white.png",
-        "/assets/images/under-construction-like-its-1999.gif",
-        "/assets/images/xdvr.png"
+        "/assets/images/xbox.png"
       ],
       "patterns": []
     }
@@ -111,6 +113,7 @@
     "/assets/images/apple-icon-76x76.png": "82ed9bb7fd3c4beab55bc5392e9e1f5384d45742",
     "/assets/images/apple-icon-precomposed.png": "f2918c4eebd8bd069af6d451ba2c2ed1bfbf4e71",
     "/assets/images/apple-icon.png": "1c2451fe8834a869eb6fe7c08ab343bf3a9392bb",
+    "/assets/images/blizz.png": "bac43029fbf847276ce5a63ea51e6636249bd7dc",
     "/assets/images/bungie-white.png": "32bb80b18ffd8d6659dd0a135a6dd972b286f077",
     "/assets/images/discord.png": "2da891fc8a862cd815bb2de38c471161308d1f4b",
     "/assets/images/favicon-16x16.png": "f95bf462220e756ef7b4f26620bf10e7788c78d5",
@@ -131,6 +134,8 @@
     "/assets/images/patreon.png": "c2455d5a6a59ff2b0ce5d698a74af7ed7226438c",
     "/assets/images/ps.jpg": "0ccde35f74eea2ecabce61325858e2e61b37b771",
     "/assets/images/ps.png": "9d18d9f5064a661e4e11bf51c337969ca5b084e8",
+    "/assets/images/stadia.png": "746e2e03be508184bd0c74522ed8ceeb4e440c8c",
+    "/assets/images/steam.png": "796bec3dab43f5090027567e785fb9ab28efa67a",
     "/assets/images/supporter-white.png": "1c6e98151a937e6ef8f5e5208e3f3d57e171ca7c",
     "/assets/images/supporter.png": "68af4cb7e0baf06e6506adf8c3cd9d903b74ca83",
     "/assets/images/takemymoneypurple.png": "7434b71e57bc71eb0750655ad7cb0be1136a4c7b",
@@ -141,11 +146,10 @@
     "/assets/images/trials-white.png": "bf7063291ccbfc85238a82fe7e8293ba66ff1dff",
     "/assets/images/twitch-purple.png": "be60df532edae0db3d9003c20c4e1ead2224eff6",
     "/assets/images/twitch-white.png": "115db67fa31ae52ce3a42c15575d5f3ecaada72d",
-    "/assets/images/under-construction-like-its-1999.gif": "c13295ba0d251cc1c332403734c6bd9c8bdaa8e0",
-    "/assets/images/xdvr.png": "6efc67f51ccacd12c0631d447a16e0013d057d9a",
+    "/assets/images/xbox.png": "ef27eae73b5fa02c3b08a7647ef62f3732068122",
     "/favicon.ico": "e64a315da11133936eb9f7d2a2cd163f6c25012a",
-    "/index.html": "d91f0b44cdecb9c7d2c070a985d3ec09f80bbd68",
-    "/main.b7756363e618cd9aac39.js": "39a2fc428be019c102a235f15488c8860b17dee6",
+    "/index.html": "b073e4e2740f16223749ffcb2588ec6bb5d9fdac",
+    "/main.46cff69ba5f44d67a7c9.js": "ded024bb2711a4ecae2ec11d8552a45e08375515",
     "/manifest.webmanifest": "5d16aa34947359b82a1b5e5ede8a51ce28e8516d",
     "/polyfills-es5.cf58f14205eeca4ba5c2.js": "9484f0e2363c00596acd3a1d29ba84b01c347066",
     "/runtime.d61d63ed52fa2d034eb2.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",

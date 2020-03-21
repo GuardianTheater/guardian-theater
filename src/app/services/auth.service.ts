@@ -31,13 +31,21 @@ export class AuthService {
         })
         .subscribe((res: { jwt: string; refreshToken: string }) => {
           try {
-            localStorage.setItem('gtapi_access_token', res.jwt);
-            localStorage.setItem('refreshToken', res.refreshToken);
+            if (jwt.length && refreshToken.length) {
+              localStorage.setItem('gtapi_access_token', res.jwt);
+              localStorage.setItem('refreshToken', res.refreshToken);
+            } else {
+              localStorage.removeItem('gtapi_access_token');
+              localStorage.removeItem('refreshToken');
+            }
           } catch (e) {
             localStorage.removeItem('gtapi_access_token');
             localStorage.removeItem('refreshToken');
           }
         });
+    } else if (jwt) {
+      localStorage.removeItem('gtapi_access_token');
+      localStorage.removeItem('refreshToken');
     }
   }
 }

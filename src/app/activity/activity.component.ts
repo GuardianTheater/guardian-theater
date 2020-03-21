@@ -4,7 +4,7 @@ import {
   HostListener,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { Subscription, combineLatest as observableCombineLatest } from 'rxjs';
@@ -25,14 +25,14 @@ import { HttpClient } from '@angular/common/http';
     trigger('growInShrinkOut', [
       transition('void => *', [
         style({ height: 0 }),
-        animate('600ms ease-out', style({ height: '*' }))
+        animate('600ms ease-out', style({ height: '*' })),
       ]),
       transition('* => void', [
         style({ height: '*' }),
-        animate('300ms ease-in', style({ height: 0 }))
-      ])
-    ])
-  ]
+        animate('300ms ease-in', style({ height: 0 })),
+      ]),
+    ]),
+  ],
 })
 export class ActivityComponent implements OnInit, OnDestroy {
   @Input() instance: Instance;
@@ -60,7 +60,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
     public sanitizer: DomSanitizer,
     private activatedRoute: ActivatedRoute,
     private http: HttpClient,
-    private gtApiService: GtApiService
+    private gtApiService: GtApiService,
   ) {}
 
   ngOnInit() {
@@ -75,28 +75,37 @@ export class ActivityComponent implements OnInit, OnDestroy {
           this.subs.push(
             this.gtApiService.getInstance(this.instanceId).subscribe(res => {
               this.instance = res;
+              if (this.instance.videos && this.instance.videos.length) {
+                this.instance.videos.forEach(video => {
+                  if (
+                    video.type === 'xbox' &&
+                    video.embedUrl &&
+                    typeof video.embedUrl === 'string' &&
+                    video.embedUrl.indexOf('xboxrecord.us') > -1
+                  ) {
+                    const fetchEmbedUrl = video.embedUrl;
+                    video.embedUrl = '';
+                    this.subs.push(
+                      this.http.get(fetchEmbedUrl).subscribe((resp: any) => {
+                        try {
+                          video.embedUrl =
+                            resp.gameClips[0].gameClipUris[0].uri;
+                        } catch (e) {}
+                      }),
+                    );
+                  } else if (typeof video.embedUrl === 'string') {
+                    video.embedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+                      video.embedUrl,
+                    ) as string;
+                  }
+                });
+              }
 
-              this.instance.videos.forEach(video => {
-                if (
-                  video.type === 'xbox' &&
-                  video.embedUrl.indexOf('xboxrecord.us') > -1
-                ) {
-                  const fetchEmbedUrl = video.embedUrl;
-                  video.embedUrl = '';
-                  this.subs.push(
-                    this.http.get(fetchEmbedUrl).subscribe((resp: any) => {
-                      try {
-                        video.embedUrl = resp.gameClips[0].gameClipUris[0].uri;
-                      } catch (e) {}
-                    })
-                  );
-                }
-              });
               this.loadingInstance = false;
-            })
+            }),
           );
         }
-      })
+      }),
     );
 
     window.innerWidth < 640 ? (this.mini = true) : (this.mini = false);
@@ -106,13 +115,15 @@ export class ActivityComponent implements OnInit, OnDestroy {
     this.animationState = 'in';
 
     this.subs.push(
-      this.settingsService.links.subscribe(links => (this.links = links))
+      this.settingsService.links.subscribe(links => (this.links = links)),
     );
 
-    if (this.instance) {
+    if (this.instance && this.instance.videos && this.instance.videos.length) {
       this.instance.videos.forEach(video => {
         if (
           video.type === 'xbox' &&
+          video.embedUrl &&
+          typeof video.embedUrl === 'string' &&
           video.embedUrl.indexOf('xboxrecord.us') > -1
         ) {
           const fetchEmbedUrl = video.embedUrl;
@@ -122,8 +133,12 @@ export class ActivityComponent implements OnInit, OnDestroy {
               try {
                 video.embedUrl = res.gameClips[0].gameClipUris[0].uri;
               } catch (e) {}
-            })
+            }),
           );
+        } else if (typeof video.embedUrl === 'string') {
+          video.embedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+            video.embedUrl,
+          ) as string;
         }
       });
     }
@@ -148,35 +163,13 @@ export class ActivityComponent implements OnInit, OnDestroy {
       clip.entry.player.destinyUserInfo.membershipType,
       pgcr.activityDetails.instanceId,
       clip.entry.characterId,
-      clip.video.gameClipId
+      clip.video.gameClipId,
     ]);
   }
 
-  stopPropagation(event) {
-    event.stopPropagation();
-  }
-
-  route(route: any[]) {
-    this.router.navigate(route);
-  }
-}
-
-@Component({
-  selector: 'app-pgcr-entry',
-  templateUrl: './pgcr-entry.component.html',
-  styleUrls: ['./activity.component.scss']
-})
-export class PgcrEntryComponent {
-  // @Input() pgcr: gt.PostGameCarnageReport;
-  @Input() instance: Instance;
-  // @Input() entry: gt.Entry;
-  @Input() entry: Video;
-  @Input() links: gt.Links;
-
-  constructor(private router: Router) {}
-
-  toGuardian(membershipType, membershipId) {
-    this.router.navigate(['/guardian', membershipType, membershipId]);
+  expandInfo(clip, event) {
+    clip.infoExpanded = !clip.infoExpanded;
+    this.stopPropagation(event);
   }
 
   stopPropagation(event) {

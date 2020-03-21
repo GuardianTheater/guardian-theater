@@ -29,6 +29,21 @@ export class GtApiService {
     const url = `${environment.api.baseUrl}/streamervsstreamer`;
     return this.http.get(url) as Observable<Instance[]>;
   }
+
+  getAllLinkedAccounts() {
+    const url = `${environment.api.baseUrl}/linkedAccounts`;
+    return this.http.get(url) as Observable<LinkedAccount[]>;
+  }
+
+  removeLink(linkId: string) {
+    const url = `${environment.api.baseUrl}/removeLink`;
+    return this.http.post(url, { linkId }) as Observable<any>;
+  }
+
+  addLink(jwt: string) {
+    const url = `${environment.api.baseUrl}/addLink`;
+    return this.http.post(url, { jwt }) as Observable<any>;
+  }
 }
 
 export interface EncounteredClips {
@@ -62,6 +77,7 @@ export interface Video {
   displayName: string;
   membershipId: string;
   membershipType: number;
+  bnetMembershipId?: string;
   team: number;
   linkName: string;
   linkId?: string | number;
@@ -71,5 +87,40 @@ export interface Video {
   thumbnail: string;
   title: string;
   offset?: string;
+
   play?: boolean;
+  infoExpanded?: boolean;
+}
+
+export interface LinkedAccount {
+  id: string;
+  linkType: 'bungiePartner' | 'nameMatch' | 'authentication' | 'ocr';
+  accountType: 'twitch' | 'mixer' | 'xbox';
+  twitchAccount?: {
+    id: string;
+    login: string;
+    displayName: string;
+    lastRecordingCheck: string;
+  };
+  mixerAccount?: {
+    id: number;
+    username: string;
+  };
+  xboxAccount?: {
+    gamertag: string;
+    lastClipCheck: string;
+  };
+  destinyProfile: {
+    membershipId: string;
+    membershipType: number;
+    displayName: string;
+    pageLastVisited: string;
+    bnetProfileChecked: string;
+    activitiesLastChecked: string;
+    xboxNameMatchChecked: string;
+    twitchNameMatchChecked: string;
+    mixerNameMatchChecked: string;
+  };
+
+  name?: string;
 }

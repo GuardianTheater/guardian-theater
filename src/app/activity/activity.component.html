@@ -56,7 +56,7 @@
             >{{ instance.period | date: 'short' }}</span
           >
         </span>
-        <a
+        <!-- <a
           class="activity-link tracker"
           title="View Activity on Destiny Tracker"
           (click)="stopPropagation($event)"
@@ -86,7 +86,7 @@
           angulartics2On="click"
           angularticsEvent="ActivityLink"
           angularticsCategory="SettingsLink"
-        ></a>
+        ></a> -->
       </div>
     </div>
   </div>
@@ -95,10 +95,7 @@
     <div class="clip-item-wrapper" *ngFor="let clip of instance.videos">
       <div class="clip-item">
         <div class="row">
-          <app-pgcr-entry
-            [instance]="instance"
-            [entry]="clip"
-            [links]="links"
+          <div
             (click)="toGuardian(clip.membershipType, clip.membershipId)"
             class="columns small-12 mode pgcr-entry"
             [ngClass]="{
@@ -108,8 +105,26 @@
                 instance.team && clip.team && instance.team !== clip.team
             }"
           >
-          </app-pgcr-entry>
+            <span class="pgcr-entry-name" [title]="clip.displayName">
+              {{ clip.displayName }}
+              <span
+                *ngIf="clip.bnetMembershipId | gtBadge"
+                class="label player-label"
+                [ngClass]="clip.bnetMembershipId | gtBadge"
+                >{{ clip.bnetMembershipId | gtBadge }}</span
+              >
+            </span>
+            <!-- <a
+              class="profile-link options fi-info"
+              title="Link Information"
+              (click)="expandInfo(clip, $event)"
+            ></a> -->
+          </div>
         </div>
+        <!-- <div *ngIf="clip.infoExpanded" class="row">
+          Report link betweeen {{ clip.displayName }} and {{ clip.linkName }} as
+          inacurate.
+        </div> -->
         <div class="row" *ngIf="clip.type === 'twitch'">
           <a
             class="columns small-12 mode twitch-banner"
@@ -139,7 +154,7 @@
           <div class="columns small-12 clip-wrapper" *ngIf="clip.play">
             <iframe
               class="twitch-embed"
-              [src]="sanitizer.bypassSecurityTrustResourceUrl(clip.embedUrl)"
+              [src]="clip.embedUrl"
               frameborder="0"
               scrolling="no"
               allowfullscreen="true"
@@ -176,7 +191,7 @@
           <div class="columns small-12 clip-wrapper" *ngIf="clip.play">
             <iframe
               class="mixer-embed"
-              [src]="sanitizer.bypassSecurityTrustResourceUrl(clip.embedUrl)"
+              [src]="clip.embedUrl"
               frameborder="0"
               scrolling="no"
               allowfullscreen="true"
@@ -189,7 +204,7 @@
             <span class="xbox-clip-name">{{
               clip.title || 'Xbox Game DVR Clip'
             }}</span>
-            <a
+            <!-- <a
               class="xbox-clip-link xboxrecordus"
               title="View Clip on xboxrecord.us"
               (click)="stopPropagation($event)"
@@ -200,7 +215,7 @@
               angularticsEvent="XboxClipLink"
               angularticsCategory="XboxRecordUsLink"
               >.us</a
-            >
+            > -->
             <!-- <a
                 class="xbox-clip-link xbox"
                 title="View Clip on Xbox"
@@ -233,7 +248,7 @@
                 angularticsEvent="XboxClipLink"
                 angularticsCategory="DownloadXboxClip"
               ></a> -->
-            <a
+            <!-- <a
               class="xbox-clip-link options fi-wrench"
               title="Configure Clip Links"
               (click)="route(['/settings'])"
@@ -241,7 +256,7 @@
               angulartics2On="click"
               angularticsEvent="XboxClipLink"
               angularticsCategory="SettingsLink"
-            ></a>
+            ></a> -->
           </div>
           <div class="columns small-12 clip-wrapper">
             <video

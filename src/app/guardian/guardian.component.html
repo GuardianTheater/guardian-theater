@@ -132,7 +132,12 @@
     ></div>
   </div>
   <div *ngIf="!(filteredInstances | async).length && !loadingActivities">
-    No activities with clips found. Check back later!
+    <p>We didn't find any clips for you this time. 😢</p>
+    <p>
+      If this is your first time visiting the site, your profile has been added
+      to our search queue. 🕵️‍♂️
+    </p>
+    <p>Check back later, hopefully we'll have something to show you. 😊</p>
   </div>
 
   <app-activity

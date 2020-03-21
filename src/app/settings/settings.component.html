@@ -1,7 +1,7 @@
-<a (click)="back()">Back</a>
+<!-- <a (click)="back()">Back</a> -->
 
 <div class="row">
-  <div class="columns small-12 button-group expanded">
+  <div class="columns small-12">
     <button
       type="button"
       class="button dark-toggle"
@@ -14,10 +14,10 @@
   </div>
 </div>
 
-<h5>Activity Links</h5>
+<!-- <h5>Activity Links</h5>
 <div class="row">
   <div class="columns small-12 button-group expanded">
-    <!-- <button type="button" class="button filter-toggle bungie" [ngClass]="{ 'hollow': !links.activity.bungie }" (click)="toggleActivityLink('bungie')" title="Bungie">Bungie</button> -->
+    <button type="button" class="button filter-toggle bungie" [ngClass]="{ 'hollow': !links.activity.bungie }" (click)="toggleActivityLink('bungie')" title="Bungie">Bungie</button>
     <button
       type="button"
       class="button filter-toggle trials"
@@ -287,5 +287,32 @@
     >
       zh-chs
     </button>
+  </div>
+</div> -->
+
+<h5 *ngIf="jwt">Linked Accounts</h5>
+<div *ngIf="jwt && loadingLinkedAccounts" class="links-spinner-wrapper">
+  <div
+    class="fi-widget spinner links-spinner"
+    title="Fetching Linked Accounts..."
+  ></div>
+</div>
+<div class="row linkedAccounts" *ngIf="jwt && !loadingLinkedAccounts">
+  <div *ngFor="let linkedAccount of linkedAccounts" class="columns small-12">
+    <div [ngClass]="linkedAccount.accountType">
+      <span [ngClass]="linkedAccount.accountType">{{
+        linkedAccount.name
+      }}</span>
+    </div>
+    <button class="clear button" (click)="removeLink(linkedAccount.id)">
+      Remove
+    </button>
+  </div>
+  <div *ngIf="!twitchLinkExists" class="columns small-12">
+    <div class="twitch clickable">
+      <span class="twitch clickable" (click)="addTwitchAccount()"
+        >Add Twitch Account</span
+      >
+    </div>
   </div>
 </div>

@@ -21,10 +21,7 @@ import { FrontPageComponent } from './front-page/front-page.component';
 import { AboutComponent } from './about/about.component';
 import { SettingsComponent } from './settings/settings.component';
 import { GuardianComponent } from './guardian/guardian.component';
-import {
-  ActivityComponent,
-  PgcrEntryComponent
-} from './activity/activity.component';
+import { ActivityComponent } from './activity/activity.component';
 import { DestinyHashPipe } from './pipes/destiny-hash.pipe';
 import { TwitchStampPipe } from './pipes/twitch-stamp.pipe';
 import { GtBadgePipe } from './pipes/gt-badge.pipe';
@@ -38,6 +35,7 @@ import { ManifestService } from './services/manifest.service';
 import { AuthComponent } from './auth/auth.component';
 import { GtApiService } from './services/gtApi.service';
 import { JwtModule } from '@auth0/angular-jwt';
+import { AuthService } from './services/auth.service';
 
 export function tokenGetter() {
   return localStorage.getItem('gtapi_access_token');
@@ -54,13 +52,12 @@ export function tokenGetter() {
     TwitchStampPipe,
     GtBadgePipe,
     ActivityComponent,
-    PgcrEntryComponent,
     DestinyHashPipe,
     TakeMyMoneyComponent,
     SearchComponent,
     BungieStatusComponent,
     PlatformAbbrPipe,
-    AuthComponent
+    AuthComponent,
   ],
   imports: [
     BrowserModule,
@@ -71,16 +68,16 @@ export function tokenGetter() {
       config: {
         tokenGetter: tokenGetter,
         whitelistedDomains: ['localhost:3000', 'api.guardian.theater'],
-        blacklistedRoutes: []
-      }
+        blacklistedRoutes: [],
+      },
     }),
     RoutesModule,
     Angulartics2Module.forRoot(),
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
-      registrationStrategy: 'registerWithDelay:5000'
+      registrationStrategy: 'registerWithDelay:5000',
     }),
-    FontAwesomeModule
+    FontAwesomeModule,
   ],
   providers: [
     BungieHttpService,
@@ -89,8 +86,9 @@ export function tokenGetter() {
     XboxService,
     SettingsService,
     ManifestService,
-    GtApiService
+    GtApiService,
+    AuthService,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

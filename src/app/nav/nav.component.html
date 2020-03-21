@@ -140,6 +140,17 @@
       "
       type="button"
       class="button"
+      (click)="route(['/settings'])"
+      title="Settings"
+    >
+      Settings
+    </button>
+    <button
+      *ngIf="
+        (authService.token | async) && (authService.token | async).membershipId
+      "
+      type="button"
+      class="button"
       (click)="currentProfile()"
       title="My Profile"
     >

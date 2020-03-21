@@ -1,0 +1,83 @@
+@import '../../variables';
+
+.linkedAccounts {
+  div {
+    &.twitch {
+      background-color: $twitch-purple;
+      &.clickable {
+        @include background-hover-darken($twitch-purple);
+      }
+    }
+    &.mixer {
+      background-color: $mixer-blue;
+      &.clickable {
+        @include background-hover-darken($mixer-blue);
+      }
+    }
+    &.clickable {
+      cursor: pointer;
+    }
+
+    &.mixer,
+    &.twitch {
+      height: 3em;
+      line-height: 3em;
+      padding: 0 1em;
+      margin: 0 1em 1em 0;
+      display: inline-block;
+      clear: left;
+    }
+  }
+  span {
+    background-size: 1em;
+    height: 100%;
+    background-position: left center;
+    background-repeat: no-repeat;
+    display: inline-block;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding-left: 20px;
+
+    &.twitch {
+      background-image: url('/assets/images/twitch-white.png');
+    }
+    &.mixer {
+      background-image: url('/assets/images/mixer-white.png');
+    }
+    &.membershipType1 {
+      background-image: url('/assets/images/xbox.png');
+    }
+    &.membershipType2 {
+      background-image: url('/assets/images/ps.png');
+    }
+    &.membershipType3 {
+      background-image: url('/assets/images/steam.png');
+    }
+    &.membershipType4 {
+      background-image: url('/assets/images/blizz.png');
+    }
+    &.membershipType5 {
+      background-image: url('/assets/images/stadia.png');
+    }
+  }
+}
+
+.spinner {
+  -webkit-animation: spin 3s infinite linear;
+  animation: spin 3s infinite linear;
+}
+
+.links-spinner-wrapper {
+  text-align: center;
+}
+
+.links-spinner {
+  display: inline-block;
+  width: 75px;
+  text-align: center;
+  font-size: 75px;
+  line-height: 75px;
+  height: 75px;
+  color: $light-purple;
+}

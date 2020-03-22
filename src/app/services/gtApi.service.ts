@@ -1,13 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BungieMembershipType } from 'bungie-api-ts/user';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { DestinyActivityModeType } from 'bungie-api-ts/destiny2';
 import { environment } from 'environments/environment';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class GtApiService {
-  constructor(private http: HttpClient) {}
+  public excludeLinks: BehaviorSubject<string[]>;
+
+  constructor(private http: HttpClient) {
+    this.excludeLinks = new BehaviorSubject([]);
+    this.getVotes().subscribe();
+  }
 
   getEncounteredClips(
     membershipType: BungieMembershipType,
@@ -43,6 +49,33 @@ export class GtApiService {
   addLink(jwt: string) {
     const url = `${environment.api.baseUrl}/addLink`;
     return this.http.post(url, { jwt }) as Observable<any>;
+  }
+
+  getVotes() {
+    const url = `${environment.api.baseUrl}/getVotes`;
+    return this.http.get(url).pipe(
+      map(res => {
+        this.excludeLinks.next((res as any).map(vote => vote.link.id));
+      }),
+    ) as Observable<any>;
+  }
+
+  reportLink(linkId: string) {
+    const url = `${environment.api.baseUrl}/reportLink`;
+    return this.http.post(url, { linkId }).pipe(
+      map(res => {
+        this.excludeLinks.next((res as any).map(vote => vote.link.id));
+      }),
+    ) as Observable<any>;
+  }
+
+  unreportLink(linkId: string) {
+    const url = `${environment.api.baseUrl}/unreportLink`;
+    return this.http.post(url, { linkId }).pipe(
+      map(res => {
+        this.excludeLinks.next((res as any).map(vote => vote.link.id));
+      }),
+    ) as Observable<any>;
   }
 }
 
@@ -80,7 +113,7 @@ export interface Video {
   bnetMembershipId?: string;
   team: number;
   linkName: string;
-  linkId?: string | number;
+  linkId?: string;
   type: string;
   url: string;
   embedUrl: string;
@@ -90,6 +123,8 @@ export interface Video {
 
   play?: boolean;
   infoExpanded?: boolean;
+  badLink?: boolean;
+  reporting?: boolean;
 }
 
 export interface LinkedAccount {

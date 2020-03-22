@@ -22,23 +22,22 @@
     <div class="row">
       <div class="active-character">
         <div class="gamertag">
-          <span class="name" *ngFor="let profile of profiles"
+          <span
+            class="name"
+            *ngFor="let profile of profiles"
+            [ngClass]="{
+              xbox: profile.membershipType === 1,
+              psn: profile.membershipType === 2,
+              steam: profile.membershipType === 3,
+              blizzard: profile.membershipType === 4,
+              stadia: profile.membershipType === 5
+            }"
             >{{ profile.displayName }}
-            <span
-              class="label"
-              [ngClass]="{
-                xbox: profile.membershipType === 1,
-                psn: profile.membershipType === 2,
-                steam: profile.membershipType === 3
-              }"
-              >{{ profile.membershipType | platformAbbr }}</span
-            >
           </span>
         </div>
       </div>
     </div>
   </div>
-
   <div class="row">
     <div class="columns small-12 button-group expanded">
       <button
@@ -99,8 +98,23 @@
       </button>
     </div>
   </div>
-
-  <div class="row" *ngIf="(filteredInstances | async).length > 7">
+</div>
+<div *ngIf="!membershipId || !membershipType">
+  <div class="profile small-12 columns">
+    <div class="row">
+      <div class="active-character">
+        <div class="gamertag">
+          <span class="name no-icon">Streamer vs Streamer</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+  <div
+    class="row"
+    *ngIf="(filteredInstances | async).length > (pageSize | async)"
+  >
     <div class="columns small-12 button-group expanded">
       <button
         type="button"
@@ -116,7 +130,9 @@
         class="button paging"
         (click)="nextPage()"
         [ngClass]="{
-          disabled: (page | async) >= (filteredInstances | async).length / 7 - 1
+          disabled:
+            (page | async) >=
+            (filteredInstances | async).length / (pageSize | async) - 1
         }"
         title="Next"
       >
@@ -145,7 +161,10 @@
     [instance]="instance"
   ></app-activity>
 
-  <div class="row" *ngIf="(filteredInstances | async).length > 7">
+  <div
+    class="row"
+    *ngIf="(filteredInstances | async).length > (pageSize | async)"
+  >
     <div class="columns small-12 button-group expanded">
       <button
         type="button"
@@ -161,7 +180,9 @@
         class="button paging"
         (click)="nextPage(true)"
         [ngClass]="{
-          disabled: (page | async) >= (filteredInstances | async).length / 7 - 1
+          disabled:
+            (page | async) >=
+            (filteredInstances | async).length / (pageSize | async) - 1
         }"
         title="Next"
       >

@@ -100,9 +100,13 @@
             class="columns small-12 mode pgcr-entry"
             [ngClass]="{
               Player: clip.team === 16,
-              Team: instance.team && clip.team && instance.team === clip.team,
+              Team:
+                (instance.team && clip.team && instance.team === clip.team) ||
+                (!instance.team && clip.team && clip.team === 17),
               Opponent:
-                instance.team && clip.team && instance.team !== clip.team
+                (instance.team && clip.team && instance.team !== clip.team) ||
+                (!instance.team && clip.team && clip.team === 18),
+              Badlink: clip.badLink
             }"
           >
             <span class="pgcr-entry-name" [title]="clip.displayName">
@@ -114,18 +118,26 @@
                 >{{ clip.bnetMembershipId | gtBadge }}</span
               >
             </span>
-            <!-- <a
-              class="profile-link options fi-info"
-              title="Link Information"
-              (click)="expandInfo(clip, $event)"
-            ></a> -->
+            <a
+              class="profile-link options fi-unlink"
+              title="Report and Hide Incorrect Link"
+              (click)="reportLink(clip)"
+              *ngIf="!clip.reporting && !clip.badLink"
+            ></a>
+            <a
+              class="profile-link options fi-link"
+              title="Undo Report and Hide Incorrect Link"
+              (click)="unreportLink(clip)"
+              *ngIf="!clip.reporting && clip.badLink"
+            ></a>
+            <a
+              class="profile-link fi-widget spinner"
+              title="Reporting..."
+              *ngIf="clip.reporting"
+            ></a>
           </div>
         </div>
-        <!-- <div *ngIf="clip.infoExpanded" class="row">
-          Report link betweeen {{ clip.displayName }} and {{ clip.linkName }} as
-          inacurate.
-        </div> -->
-        <div class="row" *ngIf="clip.type === 'twitch'">
+        <div class="row" *ngIf="clip.type === 'twitch' && !clip.badLink">
           <a
             class="columns small-12 mode twitch-banner"
             target="_blank"
@@ -162,7 +174,7 @@
             </iframe>
           </div>
         </div>
-        <div class="row" *ngIf="clip.type === 'mixer'">
+        <div class="row" *ngIf="clip.type === 'mixer' && !clip.badLink">
           <a
             class="columns small-12 mode mixer-banner"
             target="_blank"
@@ -199,7 +211,7 @@
             </iframe>
           </div>
         </div>
-        <div class="row" *ngIf="clip.type === 'xbox'">
+        <div class="row" *ngIf="clip.type === 'xbox' && !clip.badLink">
           <div class="columns small-12 mode xbox-banner" target="_blank">
             <span class="xbox-clip-name">{{
               clip.title || 'Xbox Game DVR Clip'

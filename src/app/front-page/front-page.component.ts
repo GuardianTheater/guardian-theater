@@ -5,7 +5,7 @@ import { GtApiService, Instance } from 'app/services/gtApi.service';
 @Component({
   selector: 'app-front-page',
   templateUrl: './front-page.component.html',
-  styleUrls: ['./front-page.component.scss']
+  styleUrls: ['./front-page.component.scss'],
 })
 export class FrontPageComponent implements OnInit, OnDestroy {
   private subs: Subscription[];
@@ -25,13 +25,31 @@ export class FrontPageComponent implements OnInit, OnDestroy {
         this.instances = res;
         this.slicedInstances = this.instances.slice(
           0 + this.page * 7,
-          7 + this.page * 7
+          7 + this.page * 7,
         );
-      })
+      }),
     );
   }
 
   ngOnDestroy() {
     this.subs.forEach(sub => sub.unsubscribe());
+  }
+
+  nextPage(toTop?: boolean) {
+    if (this.page < this.instances.length / 7 - 1) {
+      this.page++;
+      if (toTop) {
+        window.scroll(0, 0);
+      }
+    }
+  }
+
+  prevPage(toTop?: boolean) {
+    if (this.page > 0) {
+      this.page--;
+      if (toTop) {
+        window.scroll(0, 0);
+      }
+    }
   }
 }

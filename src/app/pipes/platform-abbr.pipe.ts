@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'platformAbbr'
+  name: 'platformAbbr',
 })
 export class PlatformAbbrPipe implements PipeTransform {
   transform(platform: number): string {
@@ -12,6 +12,10 @@ export class PlatformAbbrPipe implements PipeTransform {
         return 'PSN';
       case 3:
         return 'STEAM';
+      case 4:
+        return 'BNET';
+      case 5:
+        return 'STADIA';
       default:
         return platform + '';
     }

@@ -398,7 +398,6 @@
 }
 
 .pgcr-entry {
-  border-top: 1px solid white;
   border-right: 1px solid white;
   display: flex;
   padding: 0;
@@ -466,6 +465,10 @@
   color: white;
   text-align: center;
   font-weight: bold;
+
+  &.spinner {
+    border: none;
+  }
 
   :host-context(.dark) & {
     border-color: $dark-mode-background;
@@ -583,6 +586,13 @@
 
   &.pgcr-entry ::ng-deep .pgcr-entry-name {
     @include background-hover-darken($opponent-red, $crucible-red);
+  }
+}
+
+.Badlink {
+  background-color: $no-clips-grey !important;
+  &.pgcr-entry ::ng-deep .pgcr-entry-name {
+    @include background-hover-darken($no-clips-grey);
   }
 }
 

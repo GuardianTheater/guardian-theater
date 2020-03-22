@@ -142,6 +142,21 @@ export class ActivityComponent implements OnInit, OnDestroy {
         }
       });
     }
+    this.gtApiService.excludeLinks.subscribe(excludeLinks => {
+      if (
+        this.instance &&
+        this.instance.videos &&
+        this.instance.videos.length
+      ) {
+        this.instance.videos.forEach(video => {
+          if (excludeLinks.includes(video.linkId)) {
+            video.badLink = true;
+          } else {
+            video.badLink = false;
+          }
+        });
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -157,18 +172,19 @@ export class ActivityComponent implements OnInit, OnDestroy {
     this.router.navigate(['/guardian', membershipType, membershipId]);
   }
 
-  toClip(pgcr: gt.PostGameCarnageReport, clip) {
-    this.router.navigate([
-      '/activity',
-      clip.entry.player.destinyUserInfo.membershipType,
-      pgcr.activityDetails.instanceId,
-      clip.entry.characterId,
-      clip.video.gameClipId,
-    ]);
+  reportLink(clip: Video) {
+    clip.reporting = true;
+    this.gtApiService
+      .reportLink(clip.linkId + '')
+      .subscribe(res => (clip.reporting = false));
+    this.stopPropagation(event);
   }
 
-  expandInfo(clip, event) {
-    clip.infoExpanded = !clip.infoExpanded;
+  unreportLink(clip: Video) {
+    clip.reporting = true;
+    this.gtApiService
+      .unreportLink(clip.linkId + '')
+      .subscribe(res => (clip.reporting = false));
     this.stopPropagation(event);
   }
 

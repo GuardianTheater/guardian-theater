@@ -53,7 +53,7 @@ export class NavComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.searchString = localStorage.getItem('gt.LAST_SEARCH') || '';
+    this.searchString = '';
 
     this.settingsService.dark.subscribe(dark => (this.dark = dark));
     this._routerEvent$ = this.router.events.subscribe((event: Event) => {

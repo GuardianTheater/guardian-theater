@@ -12,16 +12,14 @@
     class="profile-button"
     (click)="route(['/guardian', result.membershipType, result.membershipId])"
     *ngFor="let result of searchResults"
+    [ngClass]="{
+      xbox: result.membershipType === 1,
+      psn: result.membershipType === 2,
+      steam: result.membershipType === 3,
+      blizzard: result.membershipType === 4,
+      stadia: result.membershipType === 5
+    }"
   >
     {{ result.displayName }}
-    <span
-      class="label"
-      [ngClass]="{
-        xbox: result.membershipType === 1,
-        psn: result.membershipType === 2,
-        steam: result.membershipType === 3
-      }"
-      >{{ result.membershipType | platformAbbr }}</span
-    >
   </button>
 </div>

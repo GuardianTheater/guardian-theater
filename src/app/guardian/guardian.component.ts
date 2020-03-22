@@ -14,7 +14,7 @@ import { DestinyActivityModeCategory } from 'bungie-api-ts/destiny2';
   selector: 'app-guardian',
   templateUrl: './guardian.component.html',
   styleUrls: ['./guardian.component.scss'],
-  providers: [GuardianService]
+  providers: [GuardianService],
 })
 export class GuardianComponent implements OnInit, OnDestroy {
   private subs: Subscription[];
@@ -44,6 +44,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
     teammates: -1 | 0 | 1;
     opponents: -1 | 0 | 1;
   }>;
+  public pageSize: BehaviorSubject<number>;
 
   constructor(
     private router: Router,
@@ -51,7 +52,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
     public guardianService: GuardianService,
     private settingsService: SettingsService,
     private manifestService: ManifestService,
-    private gtApiService: GtApiService
+    private gtApiService: GtApiService,
   ) {
     this.manifestService.state$
       .pipe(
@@ -65,7 +66,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
                 icon: `https://bungie.net${
                   this.manifestService.defs.ActivityMode.get(0)
                     .displayProperties.icon
-                }`
+                }`,
               },
               {
                 category: 1,
@@ -74,7 +75,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
                 icon: `https://bungie.net${
                   this.manifestService.defs.ActivityMode.get(7)
                     .displayProperties.icon
-                }`
+                }`,
               },
               {
                 category: 2,
@@ -83,7 +84,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
                 icon: `https://bungie.net${
                   this.manifestService.defs.ActivityMode.get(5)
                     .displayProperties.icon
-                }`
+                }`,
               },
               {
                 category: 3,
@@ -92,16 +93,17 @@ export class GuardianComponent implements OnInit, OnDestroy {
                 icon: `https://bungie.net${
                   this.manifestService.defs.ActivityMode.get(63)
                     .displayProperties.icon
-                }`
-              }
+                }`,
+              },
             ];
           }
-        })
+        }),
       )
       .subscribe();
   }
 
   ngOnInit() {
+    this.pageSize = new BehaviorSubject(7);
     this.subs = [];
     this.page = new BehaviorSubject(0);
     this.instances = new BehaviorSubject([]);
@@ -109,13 +111,13 @@ export class GuardianComponent implements OnInit, OnDestroy {
     this.playerFilter = new BehaviorSubject({
       player: 1,
       teammates: 1,
-      opponents: 1
+      opponents: 1,
     });
     this.filteredInstances = combineLatest(
       this.instances,
       this.modeFilter,
       this.playerFilter,
-      this.manifestService.state$
+      this.manifestService.state$,
     ).pipe(
       map(([instances, modeFilter, playerFilter, state]) => {
         if (state.loaded) {
@@ -126,11 +128,11 @@ export class GuardianComponent implements OnInit, OnDestroy {
             let modeCategory = 0;
             try {
               const modeType = this.manifestService.defs.Activity.get(
-                instance.activityHash
+                instance.activityHash,
               ).directActivityModeType;
               if (modeType) {
                 modeCategory = this.manifestService.defs.ActivityMode.get(
-                  modeType
+                  modeType,
                 ).activityModeCategory;
               }
             } catch (e) {}
@@ -147,7 +149,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
               });
             }
             const videoTeamSet = new Set(
-              instance.videos.map(video => video.team)
+              instance.videos.map(video => video.team),
             );
             const player = 16;
             const teammates = instance.team;
@@ -222,19 +224,20 @@ export class GuardianComponent implements OnInit, OnDestroy {
         } else {
           return instances;
         }
-      })
+      }),
     );
     this.slicedInstances = combineLatest(
       this.filteredInstances,
-      this.page
+      this.page,
+      this.pageSize,
     ).pipe(
-      map(([instances, page]) => {
-        if (page > Math.floor(instances.length / 7)) {
-          page = Math.floor(instances.length / 7);
+      map(([instances, page, pageSize]) => {
+        if (page > Math.floor(instances.length / pageSize)) {
+          page = Math.floor(instances.length / pageSize);
           this.page.next(page);
         }
-        return instances.slice(0 + page * 7, 7 + page * 7);
-      })
+        return instances.slice(0 + page * pageSize, pageSize + page * pageSize);
+      }),
     );
 
     this.subs.push(
@@ -246,12 +249,12 @@ export class GuardianComponent implements OnInit, OnDestroy {
           this.profiles = null;
           this.emblemHash = null;
         }
-        this.membershipType = params['membershipType']
-          ? +params['membershipType']
-          : -1;
-        this.membershipId = params['membershipId']
-          ? params['membershipId']
-          : '';
+        this.membershipType = +params['membershipType'];
+        this.membershipId = params['membershipId'];
+
+        if (!params || !params['membershipType'] || !params['membershipId']) {
+          this.pageSize.next(1);
+        }
 
         if (this.membershipType && this.membershipId) {
           this.loadingAccounts = true;
@@ -259,12 +262,12 @@ export class GuardianComponent implements OnInit, OnDestroy {
             this.guardianService
               .getLinkedAccounts(
                 +params['membershipType'],
-                params['membershipId']
+                params['membershipId'],
               )
               .subscribe(res => {
                 this.loadingAccounts = false;
                 this.settingsService.activeProfiles.next(res.Response.profiles);
-              })
+              }),
           );
 
           this.subs.push(
@@ -272,7 +275,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
               .getEmblemHash(+params['membershipType'], params['membershipId'])
               .subscribe(res => {
                 this.emblemHash = res;
-              })
+              }),
           );
 
           this.loadingActivities = true;
@@ -282,22 +285,30 @@ export class GuardianComponent implements OnInit, OnDestroy {
               .subscribe(res => {
                 this.loadingActivities = false;
                 this.instances.next(res.instances);
-              })
+              }),
+          );
+        } else {
+          this.loadingActivities = true;
+          this.subs.push(
+            this.gtApiService.getStreamerVsStreamer().subscribe(res => {
+              this.loadingActivities = false;
+              this.instances.next(res);
+            }),
           );
         }
-      })
+      }),
     );
 
     this.subs.push(
       this.settingsService.activeProfiles.subscribe(
-        profiles => (this.profiles = profiles)
-      )
+        profiles => (this.profiles = profiles),
+      ),
     );
 
     this.subs.push(
       this.settingsService.clipLimiter.subscribe(limiter => {
         this.clipLimiter = limiter;
-      })
+      }),
     );
   }
 
@@ -312,7 +323,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
       this.membershipType,
       this.membershipId,
       gamemode,
-      0
+      0,
     ]);
   }
 
@@ -346,10 +357,15 @@ export class GuardianComponent implements OnInit, OnDestroy {
   }
 
   nextPage(toTop?: boolean) {
-    combineLatest(this.filteredInstances, this.page)
+    combineLatest(this.filteredInstances, this.page, this.pageSize)
       .pipe(take(1))
-      .subscribe(([instances, page]) => {
-        if (page < instances.length / 7 - 1) {
+      .subscribe(([instances, page, pageSize]) => {
+        if (page < instances.length / pageSize - 1) {
+          instances.forEach(instance => {
+            instance.videos.forEach(video => {
+              video.play = false;
+            });
+          });
           this.page.next(page + 1);
           if (toTop) {
             window.scroll(0, 0);
@@ -359,13 +375,20 @@ export class GuardianComponent implements OnInit, OnDestroy {
   }
 
   prevPage(toTop?: boolean) {
-    this.page.pipe(take(1)).subscribe(page => {
-      if (page > 0) {
-        this.page.next(page - 1);
-        if (toTop) {
-          window.scroll(0, 0);
+    combineLatest(this.filteredInstances, this.page)
+      .pipe(take(1))
+      .subscribe(([instances, page]) => {
+        if (page > 0) {
+          instances.forEach(instance => {
+            instance.videos.forEach(video => {
+              video.play = false;
+            });
+          });
+          this.page.next(page - 1);
+          if (toTop) {
+            window.scroll(0, 0);
+          }
         }
-      }
-    });
+      });
   }
 }

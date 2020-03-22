@@ -24,6 +24,36 @@
   margin: 0.5em;
 
   cursor: pointer;
+  height: 1em;
+  background-size: 1em;
+  height: 100%;
+  background-position: 0.5em center;
+  background-repeat: no-repeat;
+  display: inline-block;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  padding-left: 2em;
+
+  &.xbox {
+    background-image: url('/assets/images/xbox.png');
+  }
+
+  &.psn {
+    background-image: url('/assets/images/ps.png');
+  }
+
+  &.steam {
+    background-image: url('/assets/images/steam.png');
+  }
+
+  &.blizzard {
+    background-image: url('/assets/images/blizz.png');
+  }
+
+  &.stadia {
+    background-image: url('/assets/images/stadia.png');
+  }
 }
 
 .label {

@@ -10,7 +10,7 @@ import { GuardianService } from '../services/guardian.service';
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
-  providers: [GuardianService]
+  providers: [GuardianService],
 })
 export class SearchComponent implements OnInit, OnDestroy {
   public searching: boolean;
@@ -25,7 +25,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     private bHttp: BungieHttpService,
     private router: Router,
     private guardianService: GuardianService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit() {
@@ -36,7 +36,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.params$ = this.activatedRoute.params.subscribe((params: Params) => {
       this.searchResults = null;
       if (params['guardian']) {
-        localStorage.setItem('gt.LAST_SEARCH', params['guardian']);
         this.searchName.next(params['guardian']);
       }
     });
@@ -58,7 +57,7 @@ export class SearchComponent implements OnInit, OnDestroy {
           } else {
             return observableEmpty();
           }
-        })
+        }),
       )
       .subscribe((res: ServerResponse<UserInfoCard[]>) => {
         this.searchResults = res.Response;
@@ -67,8 +66,8 @@ export class SearchComponent implements OnInit, OnDestroy {
           this.router.navigate(
             ['/guardian', result.membershipType, result.membershipId],
             {
-              replaceUrl: true
-            }
+              replaceUrl: true,
+            },
           );
         }
         if (this.searchResults.length > 1) {
@@ -101,8 +100,8 @@ export class SearchComponent implements OnInit, OnDestroy {
                 this.router.navigate(
                   ['/guardian', result.membershipType, result.membershipId],
                   {
-                    replaceUrl: true
-                  }
+                    replaceUrl: true,
+                  },
                 );
               }
               this.checkingDuplicates = false;

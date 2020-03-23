@@ -122,18 +122,32 @@
               class="profile-link options fi-unlink"
               title="Report and Hide Incorrect Link"
               (click)="reportLink(clip)"
-              *ngIf="!clip.reporting && !clip.badLink"
+              *ngIf="
+                (authService.token | async) &&
+                (authService.token | async).membershipId &&
+                !clip.reporting &&
+                !clip.badLink
+              "
             ></a>
             <a
               class="profile-link options fi-link"
               title="Undo Report and Hide Incorrect Link"
               (click)="unreportLink(clip)"
-              *ngIf="!clip.reporting && clip.badLink"
+              *ngIf="
+                (authService.token | async) &&
+                (authService.token | async).membershipId &&
+                !clip.reporting &&
+                clip.badLink
+              "
             ></a>
             <a
               class="profile-link fi-widget spinner"
               title="Reporting..."
-              *ngIf="clip.reporting"
+              *ngIf="
+                (authService.token | async) &&
+                (authService.token | async).membershipId &&
+                clip.reporting
+              "
             ></a>
           </div>
         </div>

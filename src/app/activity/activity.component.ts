@@ -15,6 +15,7 @@ import { SettingsService } from '../services/settings.service';
 import { Instance, Video, GtApiService } from 'app/services/gtApi.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from 'app/services/auth.service';
 
 @Component({
   selector: 'app-activity',
@@ -61,6 +62,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private http: HttpClient,
     private gtApiService: GtApiService,
+    public authService: AuthService,
   ) {}
 
   ngOnInit() {

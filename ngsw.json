@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1588019718204,
+  "timestamp": 1588020153459,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -10,7 +10,7 @@
       "urls": [
         "/favicon.ico",
         "/index.html",
-        "/main.24998e23c52020b19b90.js",
+        "/main.d1dd4d768579b4889cdb.js",
         "/manifest.webmanifest",
         "/polyfills-es5.cf58f14205eeca4ba5c2.js",
         "/runtime.d61d63ed52fa2d034eb2.js",
@@ -148,8 +148,8 @@
     "/assets/images/twitch-white.png": "115db67fa31ae52ce3a42c15575d5f3ecaada72d",
     "/assets/images/xbox.png": "ef27eae73b5fa02c3b08a7647ef62f3732068122",
     "/favicon.ico": "e64a315da11133936eb9f7d2a2cd163f6c25012a",
-    "/index.html": "c403ddb3be14f0354ef2423900eca4e7a511d317",
-    "/main.24998e23c52020b19b90.js": "a3fd5b30c83f8439c398337a14f75d3636efae7c",
+    "/index.html": "dd69c896647c0be183a00d707c7410367f71d774",
+    "/main.d1dd4d768579b4889cdb.js": "6885f34fc854220c8b1765545adc838e89cef88f",
     "/manifest.webmanifest": "5d16aa34947359b82a1b5e5ede8a51ce28e8516d",
     "/polyfills-es5.cf58f14205eeca4ba5c2.js": "9484f0e2363c00596acd3a1d29ba84b01c347066",
     "/runtime.d61d63ed52fa2d034eb2.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",

@@ -9,6 +9,7 @@ import { SettingsService } from '../services/settings.service';
 import { ManifestService } from 'app/services/manifest.service';
 import { GtApiService, Instance } from 'app/services/gtApi.service';
 import { DestinyActivityModeCategory } from 'bungie-api-ts/destiny2';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 @Component({
   selector: 'app-guardian',
@@ -56,7 +57,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
   ) {
     this.manifestService.state$
       .pipe(
-        map(state => {
+        map((state) => {
           if (state.loaded) {
             this.modeFilters = [
               {
@@ -123,7 +124,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
         if (state.loaded) {
           const filtered = [];
           const modeSet = new Set(modeFilter);
-          instances.forEach(rawInstance => {
+          instances.forEach((rawInstance) => {
             const instance = { ...rawInstance };
             let modeCategory = 0;
             try {
@@ -138,7 +139,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
             } catch (e) {}
             if (!instance.team) {
               instance.team = 17;
-              instance.videos.forEach(video => {
+              instance.videos.forEach((video) => {
                 if (!video.team) {
                   if (modeCategory === 2) {
                     video.team = 18;
@@ -148,13 +149,18 @@ export class GuardianComponent implements OnInit, OnDestroy {
                 }
               });
             }
+            for (const video of instance.videos) {
+              if (!video.team || video.team === -1) {
+                video.team = 18;
+              }
+            }
             const videoTeamSet = new Set(
-              instance.videos.map(video => video.team),
+              instance.videos.map((video) => video.team),
             );
             const player = 16;
             const teammates = instance.team;
             const opponents = teammates === 17 ? 18 : 17;
-            instance.videos = instance.videos.filter(video => {
+            instance.videos = instance.videos.filter((video) => {
               if (video.team === player) {
                 if (playerFilter.player === 1) {
                   return true;
@@ -264,7 +270,18 @@ export class GuardianComponent implements OnInit, OnDestroy {
                 +params['membershipType'],
                 params['membershipId'],
               )
-              .subscribe(res => {
+              .subscribe((res) => {
+                if (res.Response.bnetMembership) {
+                  this.router.navigate(
+                    [
+                      '/guardian',
+                      res.Response.bnetMembership.membershipType,
+                      res.Response.bnetMembership.membershipId,
+                    ],
+                    { replaceUrl: true },
+                  );
+                  res.Response.profiles.unshift(res.Response.bnetMembership);
+                }
                 this.loadingAccounts = false;
                 this.settingsService.activeProfiles.next(res.Response.profiles);
               }),
@@ -273,7 +290,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
           this.subs.push(
             this.guardianService
               .getEmblemHash(+params['membershipType'], params['membershipId'])
-              .subscribe(res => {
+              .subscribe((res) => {
                 this.emblemHash = res;
               }),
           );
@@ -282,15 +299,18 @@ export class GuardianComponent implements OnInit, OnDestroy {
           this.subs.push(
             this.gtApiService
               .getEncounteredClips(this.membershipType, this.membershipId)
-              .subscribe(res => {
+              .pipe()
+              .subscribe((res) => {
                 this.loadingActivities = false;
-                this.instances.next(res.instances);
+                if (res.instances) {
+                  this.instances.next(res.instances);
+                }
               }),
           );
         } else {
           this.loadingActivities = true;
           this.subs.push(
-            this.gtApiService.getStreamerVsStreamer().subscribe(res => {
+            this.gtApiService.getStreamerVsStreamer().subscribe((res) => {
               this.loadingActivities = false;
               this.instances.next(res);
             }),
@@ -301,19 +321,19 @@ export class GuardianComponent implements OnInit, OnDestroy {
 
     this.subs.push(
       this.settingsService.activeProfiles.subscribe(
-        profiles => (this.profiles = profiles),
+        (profiles) => (this.profiles = profiles),
       ),
     );
 
     this.subs.push(
-      this.settingsService.clipLimiter.subscribe(limiter => {
+      this.settingsService.clipLimiter.subscribe((limiter) => {
         this.clipLimiter = limiter;
       }),
     );
   }
 
   ngOnDestroy() {
-    this.subs.forEach(sub => sub.unsubscribe());
+    this.subs.forEach((sub) => sub.unsubscribe());
     this.settingsService.activeProfiles.next([]);
   }
 
@@ -328,7 +348,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
   }
 
   toggleModeFilter(filter: 0 | 1 | 2 | 3) {
-    this.modeFilter.pipe(take(1)).subscribe(currentFilter => {
+    this.modeFilter.pipe(take(1)).subscribe((currentFilter) => {
       const set = new Set(currentFilter);
       if (set.has(filter)) {
         set.delete(filter);
@@ -340,7 +360,7 @@ export class GuardianComponent implements OnInit, OnDestroy {
   }
 
   cyclePlayerFilter(filter: 'player' | 'teammates' | 'opponents') {
-    this.playerFilter.pipe(take(1)).subscribe(playerFilter => {
+    this.playerFilter.pipe(take(1)).subscribe((playerFilter) => {
       switch (playerFilter[filter]) {
         case 1:
           playerFilter[filter] = 0;
@@ -361,8 +381,8 @@ export class GuardianComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(([instances, page, pageSize]) => {
         if (page < instances.length / pageSize - 1) {
-          instances.forEach(instance => {
-            instance.videos.forEach(video => {
+          instances.forEach((instance) => {
+            instance.videos.forEach((video) => {
               video.play = false;
             });
           });
@@ -379,8 +399,8 @@ export class GuardianComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(([instances, page]) => {
         if (page > 0) {
-          instances.forEach(instance => {
-            instance.videos.forEach(video => {
+          instances.forEach((instance) => {
+            instance.videos.forEach((video) => {
               video.play = false;
             });
           });

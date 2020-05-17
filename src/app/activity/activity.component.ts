@@ -75,10 +75,10 @@ export class ActivityComponent implements OnInit, OnDestroy {
           this.loadingInstance = true;
 
           this.subs.push(
-            this.gtApiService.getInstance(this.instanceId).subscribe(res => {
+            this.gtApiService.getInstance(this.instanceId).subscribe((res) => {
               this.instance = res;
               if (this.instance.videos && this.instance.videos.length) {
-                this.instance.videos.forEach(video => {
+                this.instance.videos.forEach((video) => {
                   if (
                     video.type === 'xbox' &&
                     video.embedUrl &&
@@ -117,11 +117,11 @@ export class ActivityComponent implements OnInit, OnDestroy {
     this.animationState = 'in';
 
     this.subs.push(
-      this.settingsService.links.subscribe(links => (this.links = links)),
+      this.settingsService.links.subscribe((links) => (this.links = links)),
     );
 
     if (this.instance && this.instance.videos && this.instance.videos.length) {
-      this.instance.videos.forEach(video => {
+      this.instance.videos.forEach((video) => {
         if (
           video.type === 'xbox' &&
           video.embedUrl &&
@@ -144,14 +144,14 @@ export class ActivityComponent implements OnInit, OnDestroy {
         }
       });
     }
-    this.gtApiService.excludeLinks.subscribe(excludeLinks => {
+    this.gtApiService.excludeLinks.subscribe((excludeLinks) => {
       if (
         this.instance &&
         this.instance.videos &&
         this.instance.videos.length
       ) {
-        this.instance.videos.forEach(video => {
-          if (excludeLinks.includes(video.linkId)) {
+        this.instance.videos.forEach((video) => {
+          if (excludeLinks && excludeLinks.includes(video.linkId)) {
             video.badLink = true;
           } else {
             video.badLink = false;
@@ -163,7 +163,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.animationState = '';
-    this.subs.forEach(sub => sub.unsubscribe());
+    this.subs.forEach((sub) => sub.unsubscribe());
   }
 
   toActivity(activityId) {
@@ -176,17 +176,21 @@ export class ActivityComponent implements OnInit, OnDestroy {
 
   reportLink(clip: Video) {
     clip.reporting = true;
-    this.gtApiService
-      .reportLink(clip.linkId + '')
-      .subscribe(res => (clip.reporting = false));
+    this.gtApiService.reportLink(clip.linkId + '').subscribe((res) => {
+      console.log(res);
+      clip.reporting = false;
+    });
+    // clip.badLink = true;
     this.stopPropagation(event);
   }
 
   unreportLink(clip: Video) {
     clip.reporting = true;
-    this.gtApiService
-      .unreportLink(clip.linkId + '')
-      .subscribe(res => (clip.reporting = false));
+    this.gtApiService.unreportLink(clip.linkId + '').subscribe((res) => {
+      console.log(res);
+      clip.reporting = false;
+    });
+    // clip.badLink = false;
     this.stopPropagation(event);
   }
 

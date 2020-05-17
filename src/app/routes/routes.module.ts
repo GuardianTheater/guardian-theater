@@ -29,7 +29,7 @@ const appRoutes: Routes = [
     path: 'guardian/:membershipType/:membershipId',
     component: GuardianComponent,
   },
-  { path: '', component: GuardianComponent },
+  { path: '', component: FrontPageComponent },
   { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
 

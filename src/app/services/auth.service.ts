@@ -6,6 +6,7 @@ import { Observable, Subject, from, BehaviorSubject } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { GtApiService } from './gtApi.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,11 @@ export class AuthService {
     exp?: number;
   }>;
 
-  constructor(private helper: JwtHelperService, private http: HttpClient) {
+  constructor(
+    private helper: JwtHelperService,
+    private gtApiService: GtApiService,
+    private http: HttpClient,
+  ) {
     this.token = new BehaviorSubject({});
     const jwt = localStorage.getItem('gtapi_access_token');
     const token = this.helper.decodeToken(jwt);

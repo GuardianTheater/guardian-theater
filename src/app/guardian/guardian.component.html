@@ -30,7 +30,8 @@
               psn: profile.membershipType === 2,
               steam: profile.membershipType === 3,
               blizzard: profile.membershipType === 4,
-              stadia: profile.membershipType === 5
+              stadia: profile.membershipType === 5,
+              bungie: profile.membershipType === 254
             }"
             >{{ profile.displayName }}
           </span>
@@ -113,7 +114,10 @@
 <div>
   <div
     class="row"
-    *ngIf="(filteredInstances | async).length > (pageSize | async)"
+    *ngIf="
+      (filteredInstances | async) &&
+      (filteredInstances | async).length > (pageSize | async)
+    "
   >
     <div class="columns small-12 button-group expanded">
       <button

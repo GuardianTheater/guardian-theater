@@ -299,12 +299,14 @@
 </div>
 <div class="row linkedAccounts" *ngIf="jwt && !loadingLinkedAccounts">
   <div *ngFor="let linkedAccount of linkedAccounts" class="columns small-12">
-    <div [ngClass]="linkedAccount.accountType">
-      <span [ngClass]="linkedAccount.accountType">{{
-        linkedAccount.name
+    <div [ngClass]="linkedAccount.type">
+      <span [ngClass]="linkedAccount.type">{{
+        linkedAccount[linkedAccount.type].displayName ||
+          linkedAccount[linkedAccount.type].username ||
+          linkedAccount[linkedAccount.type].gamertag
       }}</span>
     </div>
-    <button class="clear button" (click)="removeLink(linkedAccount.id)">
+    <button class="clear button" (click)="removeLink(linkedAccount)">
       Remove
     </button>
   </div>

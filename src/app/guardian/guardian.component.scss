@@ -88,6 +88,10 @@
     &.stadia {
       background-image: url('/assets/images/stadia.png');
     }
+
+    &.bungie {
+      background-image: url('/assets/images/bungie-white.png');
+    }
   }
 }
 
@@ -277,6 +281,7 @@
 
   &.blueberry {
     @include background-hover-darken($blueberry-blue);
+
     &.dim {
       @include background-hover-darken(darken($blueberry-blue, 40%));
       border-color: $blueberry-blue;

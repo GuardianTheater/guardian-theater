@@ -29,11 +29,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this._subLinks = this.settingsService.links.subscribe(links => {
+    this._subLinks = this.settingsService.links.subscribe((links) => {
       this.links = links;
     });
     this._subDark = this.settingsService.dark.subscribe(
-      dark => (this.dark = dark),
+      (dark) => (this.dark = dark),
     );
     this.twitchLinkExists = false;
     this.jwt = localStorage.getItem('gtapi_access_token');
@@ -69,32 +69,32 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  processLinkedAccountsResponse(res) {
+  processLinkedAccountsResponse(res: LinkedAccount[]) {
     this.linkedAccounts = [];
-    res.forEach(linkedAccount => {
-      switch (linkedAccount.accountType) {
+    res.forEach((linkedAccount) => {
+      switch (linkedAccount.type) {
         case 'mixer':
           if (
             !this.linkedAccounts.filter(
-              account =>
-                account.mixerAccount &&
-                account.mixerAccount.id === linkedAccount.mixerAccount.id,
+              (account) =>
+                account.mixer &&
+                account.mixer.userId === linkedAccount.mixer.userId,
             ).length
           ) {
-            linkedAccount.name = linkedAccount.mixerAccount.username;
+            linkedAccount.mixer.username = linkedAccount.mixer.username;
             this.linkedAccounts.push(linkedAccount);
           }
           break;
         case 'twitch':
           if (
             !this.linkedAccounts.filter(
-              account =>
-                account.twitchAccount &&
-                account.twitchAccount.id === linkedAccount.twitchAccount.id,
+              (account) =>
+                account.twitch &&
+                account.twitch.userId === linkedAccount.twitch.userId,
             ).length
           ) {
             this.twitchLinkExists = true;
-            linkedAccount.name = linkedAccount.twitchAccount.displayName;
+            linkedAccount.twitch.displayName = linkedAccount.twitch.displayName;
             this.linkedAccounts.push(linkedAccount);
           }
           break;
@@ -108,19 +108,19 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (this.jwt) {
       this.gtApiService
         .getAllLinkedAccounts()
-        .subscribe(res => this.processLinkedAccountsResponse(res));
+        .subscribe((res) => this.processLinkedAccountsResponse(res));
     } else {
       this.loadingLinkedAccounts = false;
     }
   }
 
-  removeLink(linkId: string) {
+  removeLink(link: LinkedAccount) {
     this.twitchLinkExists = false;
 
     this.loadingLinkedAccounts = true;
     this.gtApiService
-      .removeLink(linkId)
-      .subscribe(res => this.processLinkedAccountsResponse(res));
+      .removeLink(link)
+      .subscribe((res) => this.processLinkedAccountsResponse(res));
   }
 
   addTwitchAccount() {

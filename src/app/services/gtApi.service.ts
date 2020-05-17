@@ -4,7 +4,7 @@ import { BungieMembershipType } from 'bungie-api-ts/user';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { DestinyActivityModeType } from 'bungie-api-ts/destiny2';
 import { environment } from 'environments/environment';
-import { map } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 
 @Injectable()
 export class GtApiService {
@@ -12,14 +12,18 @@ export class GtApiService {
 
   constructor(private http: HttpClient) {
     this.excludeLinks = new BehaviorSubject([]);
-    this.getVotes().subscribe();
+    try {
+      const excludeLinks = JSON.parse(localStorage.getItem('excluded_links'));
+      if (excludeLinks && excludeLinks.length) {
+        this.excludeLinks.next(excludeLinks);
+      }
+    } catch (e) {}
   }
 
   getEncounteredClips(
     membershipType: BungieMembershipType,
     membershipId: string,
   ): Observable<EncounteredClips> {
-    // const url = `https://api.guardian.theater/encounteredClips/${membershipType}/${membershipId}`;
     const url = `${environment.api.baseUrl}/encounteredClips/${membershipType}/${membershipId}`;
     return this.http.get(url) as Observable<EncounteredClips>;
   }
@@ -41,8 +45,20 @@ export class GtApiService {
     return this.http.get(url) as Observable<LinkedAccount[]>;
   }
 
-  removeLink(linkId: string) {
+  removeLink(link: LinkedAccount) {
     const url = `${environment.api.baseUrl}/removeLink`;
+    let linkId = '';
+    switch (link.type) {
+      case 'mixer':
+        linkId = `${link.membershipId}.${link.type}.${link.mixer.userId}`;
+        break;
+      case 'twitch':
+        linkId = `${link.membershipId}.${link.type}.${link.twitch.userId}`;
+        break;
+      case 'xbox':
+        linkId = `${link.membershipId}.${link.type}.${link.xbox.gamertag}`;
+        break;
+    }
     return this.http.post(url, { linkId }) as Observable<any>;
   }
 
@@ -51,31 +67,28 @@ export class GtApiService {
     return this.http.post(url, { jwt }) as Observable<any>;
   }
 
-  getVotes() {
-    const url = `${environment.api.baseUrl}/getVotes`;
-    return this.http.get(url).pipe(
-      map(res => {
-        this.excludeLinks.next((res as any).map(vote => vote.link.id));
-      }),
-    ) as Observable<any>;
-  }
-
   reportLink(linkId: string) {
     const url = `${environment.api.baseUrl}/reportLink`;
-    return this.http.post(url, { linkId }).pipe(
-      map(res => {
-        this.excludeLinks.next((res as any).map(vote => vote.link.id));
-      }),
-    ) as Observable<any>;
+    this.excludeLinks.pipe(take(1)).subscribe((excludeLinks) => {
+      excludeLinks.push(linkId);
+      try {
+        localStorage.setItem('excluded_links', JSON.stringify(excludeLinks));
+      } catch (e) {}
+      this.excludeLinks.next(excludeLinks);
+    });
+    return this.http.post(url, { linkId });
   }
 
   unreportLink(linkId: string) {
     const url = `${environment.api.baseUrl}/unreportLink`;
-    return this.http.post(url, { linkId }).pipe(
-      map(res => {
-        this.excludeLinks.next((res as any).map(vote => vote.link.id));
-      }),
-    ) as Observable<any>;
+    this.excludeLinks.pipe(take(1)).subscribe((excludeLinks) => {
+      excludeLinks = excludeLinks.filter((link) => link !== linkId);
+      try {
+        localStorage.setItem('excluded_links', JSON.stringify(excludeLinks));
+      } catch (e) {}
+      this.excludeLinks.next(excludeLinks);
+    });
+    return this.http.post(url, { linkId });
   }
 }
 
@@ -128,34 +141,46 @@ export interface Video {
 }
 
 export interface LinkedAccount {
-  id: string;
-  linkType: 'bungiePartner' | 'nameMatch' | 'authentication' | 'ocr';
-  accountType: 'twitch' | 'mixer' | 'xbox';
-  twitchAccount?: {
-    id: string;
+  membershipId?: string;
+  membershipType?: BungieMembershipType;
+  displayName?: string;
+
+  fresh?: boolean;
+  type: 'twitch' | 'mixer' | 'xbox';
+
+  rejected?: boolean;
+  reported?: boolean;
+  reportedBy?: string[];
+
+  lastClipCheck?: Date;
+  clipCheckStatus: 'idle' | 'active';
+
+  lastLinkedProfilesCheck?: Date;
+  linkedProfiles?: {
+    membershipId: string;
+    membershipType: BungieMembershipType;
+    displayName?: string;
+    withError?: boolean;
+
+    lastCharacterIdCheck?: Date;
+    characterIds?: string[];
+  }[];
+
+  twitch?: {
+    userId: string;
     login: string;
     displayName: string;
-    lastRecordingCheck: string;
-  };
-  mixerAccount?: {
-    id: number;
-    username: string;
-  };
-  xboxAccount?: {
-    gamertag: string;
-    lastClipCheck: string;
-  };
-  destinyProfile: {
-    membershipId: string;
-    membershipType: number;
-    displayName: string;
-    pageLastVisited: string;
-    bnetProfileChecked: string;
-    activitiesLastChecked: string;
-    xboxNameMatchChecked: string;
-    twitchNameMatchChecked: string;
-    mixerNameMatchChecked: string;
   };
 
-  name?: string;
+  mixer?: {
+    userId: number;
+    username: string;
+    channelId: number;
+    token: string;
+  };
+
+  xbox?: {
+    gamertag: string;
+    xuid?: string;
+  };
 }

@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1588740250450,
+  "timestamp": 1590468441200,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -10,10 +10,10 @@
       "urls": [
         "/favicon.ico",
         "/index.html",
-        "/main.307ada01c3e5c8679e3a.js",
+        "/main.c7aeb4e458bc32075f8f.js",
         "/manifest.webmanifest",
-        "/polyfills-es5.cf58f14205eeca4ba5c2.js",
-        "/runtime.d61d63ed52fa2d034eb2.js",
+        "/polyfills-es5.81520181c3c21de2fb72.js",
+        "/runtime.115791f6f9e27a8fa422.js",
         "/styles.e9a04593d6f8bf93a74a.css"
       ],
       "patterns": []
@@ -81,7 +81,9 @@
         "/assets/images/trials-white.png",
         "/assets/images/twitch-purple.png",
         "/assets/images/twitch-white.png",
-        "/assets/images/xbox.png"
+        "/assets/images/under-construction-like-its-1999.gif",
+        "/assets/images/xbox.png",
+        "/assets/images/xdvr.png"
       ],
       "patterns": []
     }
@@ -146,13 +148,15 @@
     "/assets/images/trials-white.png": "bf7063291ccbfc85238a82fe7e8293ba66ff1dff",
     "/assets/images/twitch-purple.png": "be60df532edae0db3d9003c20c4e1ead2224eff6",
     "/assets/images/twitch-white.png": "115db67fa31ae52ce3a42c15575d5f3ecaada72d",
+    "/assets/images/under-construction-like-its-1999.gif": "c13295ba0d251cc1c332403734c6bd9c8bdaa8e0",
     "/assets/images/xbox.png": "ef27eae73b5fa02c3b08a7647ef62f3732068122",
+    "/assets/images/xdvr.png": "6efc67f51ccacd12c0631d447a16e0013d057d9a",
     "/favicon.ico": "e64a315da11133936eb9f7d2a2cd163f6c25012a",
-    "/index.html": "f43c1053bd94aa2644d4af391dd325e101d8451a",
-    "/main.307ada01c3e5c8679e3a.js": "472b685c25452f3a411bd6d3543ffaae6e71a8f7",
-    "/manifest.webmanifest": "5d16aa34947359b82a1b5e5ede8a51ce28e8516d",
-    "/polyfills-es5.cf58f14205eeca4ba5c2.js": "9484f0e2363c00596acd3a1d29ba84b01c347066",
-    "/runtime.d61d63ed52fa2d034eb2.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
+    "/index.html": "d1f4d209f2fabe364b9c1f533f4d4956c005a01b",
+    "/main.c7aeb4e458bc32075f8f.js": "4e4ca3c59da0591e037dfbfa72fa0aa43e5c2c68",
+    "/manifest.webmanifest": "92a6c15694978f512e15b6aaf852933e471f681f",
+    "/polyfills-es5.81520181c3c21de2fb72.js": "d181f94fd269ca78480153eb1fba25d66ff3aa1d",
+    "/runtime.115791f6f9e27a8fa422.js": "a9aafcf49f49145093fc831efd9b8e2f6c71bb9c",
     "/styles.e9a04593d6f8bf93a74a.css": "793d1b4e07afad7c8ac9b35d53ccca7c12205e82"
   },
   "navigationUrls": [

@@ -1007,12 +1007,11 @@
      * for caching.
      */
     class DataGroup {
-        constructor(scope, adapter, config, db, debugHandler, prefix) {
+        constructor(scope, adapter, config, db, prefix) {
             this.scope = scope;
             this.adapter = adapter;
             this.config = config;
             this.db = db;
-            this.debugHandler = debugHandler;
             this.prefix = prefix;
             /**
              * Tracks the LRU state of resources in this cache.
@@ -1105,7 +1104,7 @@
                     res = fromCache.res;
                     // Check the age of the resource.
                     if (this.config.refreshAheadMs !== undefined && fromCache.age >= this.config.refreshAheadMs) {
-                        ctx.waitUntil(this.safeCacheResponse(req, this.safeFetch(req), lru));
+                        ctx.waitUntil(this.safeCacheResponse(req, this.safeFetch(req)));
                     }
                 }
                 if (res !== null) {
@@ -1120,11 +1119,11 @@
                     // The request timed out. Return a Gateway Timeout error.
                     res = this.adapter.newResponse(null, { status: 504, statusText: 'Gateway Timeout' });
                     // Cache the network response eventually.
-                    ctx.waitUntil(this.safeCacheResponse(req, networkFetch, lru));
+                    ctx.waitUntil(this.safeCacheResponse(req, networkFetch));
                 }
                 else {
                     // The request completed in time, so cache it inline with the response flow.
-                    yield this.safeCacheResponse(req, res, lru);
+                    yield this.cacheResponse(req, res, lru);
                 }
                 return res;
             });
@@ -1143,14 +1142,14 @@
                 }
                 // If the network fetch times out or errors, fall back on the cache.
                 if (res === undefined) {
-                    ctx.waitUntil(this.safeCacheResponse(req, networkFetch, lru, true));
+                    ctx.waitUntil(this.safeCacheResponse(req, networkFetch, true));
                     // Ignore the age, the network response will be cached anyway due to the
                     // behavior of freshness.
                     const fromCache = yield this.loadFromCache(req, lru);
                     res = (fromCache !== null) ? fromCache.res : null;
                 }
                 else {
-                    yield this.safeCacheResponse(req, res, lru, true);
+                    yield this.cacheResponse(req, res, lru, true);
                 }
                 // Either the network fetch didn't time out, or the cache yielded a usable response.
                 // In either case, use it.
@@ -1197,24 +1196,13 @@
                 return [networkFetch, networkFetch];
             }
         }
-        safeCacheResponse(req, resOrPromise, lru, okToCacheOpaque) {
+        safeCacheResponse(req, res, okToCacheOpaque) {
             return __awaiter$1(this, void 0, void 0, function* () {
                 try {
-                    const res = yield resOrPromise;
-                    try {
-                        yield this.cacheResponse(req, res, lru, okToCacheOpaque);
-                    }
-                    catch (err) {
-                        // Saving the API response failed. This could be a result of a full storage.
-                        // Since this data is cached lazily and temporarily, continue serving clients as usual.
-                        this.debugHandler.log(err, `DataGroup(${this.config.name}@${this.config.version}).safeCacheResponse(${req.url}, status: ${res.status})`);
-                        // TODO: Better detect/handle full storage; e.g. using
-                        // [navigator.storage](https://developer.mozilla.org/en-US/docs/Web/API/NavigatorStorage/storage).
-                    }
+                    yield this.cacheResponse(req, yield res, yield this.lru(), okToCacheOpaque);
                 }
                 catch (_a) {
-                    // Request failed
-                    // TODO: Handle this error somehow?
+                    // TODO: handle this error somehow?
                 }
             });
         }
@@ -1357,12 +1345,11 @@
      * that can be installed as an update to any previously installed versions.
      */
     class AppVersion {
-        constructor(scope, adapter, database, idle, debugHandler, manifest, manifestHash) {
+        constructor(scope, adapter, database, idle, manifest, manifestHash) {
             this.scope = scope;
             this.adapter = adapter;
             this.database = database;
             this.idle = idle;
-            this.debugHandler = debugHandler;
             this.manifest = manifest;
             this.manifestHash = manifestHash;
             /**
@@ -1394,9 +1381,8 @@
                 }
             });
             // Process each `DataGroup` declared in the manifest.
-            this.dataGroups =
-                (manifest.dataGroups || [])
-                    .map(config => new DataGroup(this.scope, this.adapter, config, this.database, this.debugHandler, `${adapter.cacheNamePrefix}:${config.version}:data`));
+            this.dataGroups = (manifest.dataGroups || [])
+                .map(config => new DataGroup(this.scope, this.adapter, config, this.database, `${adapter.cacheNamePrefix}:${config.version}:data`));
             // This keeps backwards compatibility with app versions without navigation urls.
             // Fix: https://github.com/angular/angular/issues/27209
             manifest.navigationUrls = manifest.navigationUrls || BACKWARDS_COMPATIBILITY_NAVIGATION_URLS;
@@ -1989,21 +1975,30 @@ ${msgIdle}`, { headers: this.adapter.newHeaders({ 'Content-Type': 'text/plain' }
             if (!data || !data.action) {
                 return;
             }
-            event.waitUntil((() => __awaiter$5(this, void 0, void 0, function* () {
-                // Initialization is the only event which is sent directly from the SW to itself, and thus
-                // `event.source` is not a `Client`. Handle it here, before the check for `Client` sources.
-                if (data.action === 'INITIALIZE') {
-                    return this.ensureInitialized(event);
+            // Initialization is the only event which is sent directly from the SW to itself,
+            // and thus `event.source` is not a Client. Handle it here, before the check
+            // for Client sources.
+            if (data.action === 'INITIALIZE') {
+                // Only initialize if not already initialized (or initializing).
+                if (this.initialized === null) {
+                    // Initialize the SW.
+                    this.initialized = this.initialize();
+                    // Wait until initialization is properly scheduled, then trigger idle
+                    // events to allow it to complete (assuming the SW is idle).
+                    event.waitUntil((() => __awaiter$5(this, void 0, void 0, function* () {
+                        yield this.initialized;
+                        yield this.idle.trigger();
+                    }))());
                 }
-                // Only messages from true clients are accepted past this point.
-                // This is essentially a typecast.
-                if (!this.adapter.isClient(event.source)) {
-                    return;
-                }
-                // Handle the message and keep the SW alive until it's handled.
-                yield this.ensureInitialized(event);
-                yield this.handleMessage(data, event.source);
-            }))());
+                return;
+            }
+            // Only messages from true clients are accepted past this point (this is essentially
+            // a typecast).
+            if (!this.adapter.isClient(event.source)) {
+                return;
+            }
+            // Handle the message and keep the SW alive until it's handled.
+            event.waitUntil(this.handleMessage(data, event.source));
         }
         onPush(msg) {
             // Push notifications without data have no effect.
@@ -2016,33 +2011,6 @@ ${msgIdle}`, { headers: this.adapter.newHeaders({ 'Content-Type': 'text/plain' }
         onClick(event) {
             // Handle the click event and keep the SW alive until it's handled.
             event.waitUntil(this.handleClick(event.notification, event.action));
-        }
-        ensureInitialized(event) {
-            return __awaiter$5(this, void 0, void 0, function* () {
-                // Since the SW may have just been started, it may or may not have been initialized already.
-                // `this.initialized` will be `null` if initialization has not yet been attempted, or will be a
-                // `Promise` which will resolve (successfully or unsuccessfully) if it has.
-                if (this.initialized !== null) {
-                    return this.initialized;
-                }
-                // Initialization has not yet been attempted, so attempt it. This should only ever happen once
-                // per SW instantiation.
-                try {
-                    this.initialized = this.initialize();
-                    yield this.initialized;
-                }
-                catch (error) {
-                    // If initialization fails, the SW needs to enter a safe state, where it declines to respond
-                    // to network requests.
-                    this.state = DriverReadyState.SAFE_MODE;
-                    this.stateMessage = `Initialization failed due to error: ${errorToString(error)}`;
-                    throw error;
-                }
-                finally {
-                    // Regardless if initialization succeeded, background tasks still need to happen.
-                    event.waitUntil(this.idle.trigger());
-                }
-            });
         }
         handleMessage(msg, from) {
             return __awaiter$5(this, void 0, void 0, function* () {
@@ -2129,11 +2097,26 @@ ${msgIdle}`, { headers: this.adapter.newHeaders({ 'Content-Type': 'text/plain' }
         }
         handleFetch(event) {
             return __awaiter$5(this, void 0, void 0, function* () {
-                try {
-                    // Ensure the SW instance has been initialized.
-                    yield this.ensureInitialized(event);
+                // Since the SW may have just been started, it may or may not have been initialized already.
+                // this.initialized will be `null` if initialization has not yet been attempted, or will be a
+                // Promise which will resolve (successfully or unsuccessfully) if it has.
+                if (this.initialized === null) {
+                    // Initialization has not yet been attempted, so attempt it. This should only ever happen once
+                    // per SW instantiation.
+                    this.initialized = this.initialize();
                 }
-                catch (_a) {
+                // If initialization fails, the SW needs to enter a safe state, where it declines to respond to
+                // network requests.
+                try {
+                    // Wait for initialization.
+                    yield this.initialized;
+                }
+                catch (e) {
+                    // Initialization failed. Enter a safe state.
+                    this.state = DriverReadyState.SAFE_MODE;
+                    this.stateMessage = `Initialization failed due to error: ${errorToString(e)}`;
+                    // Even though the driver entered safe mode, background tasks still need to happen.
+                    event.waitUntil(this.idle.trigger());
                     // Since the SW is already committed to responding to the currently active request,
                     // respond with a network fetch.
                     return this.safeFetch(event.request);
@@ -2249,7 +2232,7 @@ ${msgIdle}`, { headers: this.adapter.newHeaders({ 'Content-Type': 'text/plain' }
                     // If the manifest is newly initialized, an AppVersion may have already been
                     // created for it.
                     if (!this.versions.has(hash)) {
-                        this.versions.set(hash, new AppVersion(this.scope, this.adapter, this.db, this.idle, this.debugger, manifest, hash));
+                        this.versions.set(hash, new AppVersion(this.scope, this.adapter, this.db, this.idle, manifest, hash));
                     }
                 });
                 // Map each client ID to its associated hash. Along the way, verify that the hash
@@ -2476,7 +2459,7 @@ ${msgIdle}`, { headers: this.adapter.newHeaders({ 'Content-Type': 'text/plain' }
         }
         setupUpdate(manifest, hash) {
             return __awaiter$5(this, void 0, void 0, function* () {
-                const newVersion = new AppVersion(this.scope, this.adapter, this.db, this.idle, this.debugger, manifest, hash);
+                const newVersion = new AppVersion(this.scope, this.adapter, this.db, this.idle, manifest, hash);
                 // Firstly, check if the manifest version is correct.
                 if (manifest.configVersion !== SUPPORTED_CONFIG_VERSION) {
                     yield this.deleteAllCaches();
